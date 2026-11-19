@@ -65,7 +65,7 @@ function dSceneMidi(){
   const el = dEleonoreJoue() ? `<p class="muted">Éléonore comptait simplement ouvrir la discussion.</p>` : `<p>Éléonore, qui comptait simplement ouvrir la discussion, lâche devant tout le monde : <em>« Vous avez déjà choisi la couleur de ma chambre, aussi ? »</em></p>`;
   return `<div class="card scene-bascule"><div class="eyebrow">La journée bascule</div>${nar}${el}<p class="muted tiny">Chacun réagit à sa manière. Un réflexe n'est pas une faute : c'est un geste qui protège quelque chose. Tu peux le laisser sortir, ou le dire autrement.</p></div>`;
 }
-function dDebordement(k){ dSon(); dPublier(d => { d.c.deb = k; }); }
+function dDebordement(k){ dSon(); try{ const j = dMoi(), L = DIM_DEB[j.hero] || [], c = L.find(x => x.k === k); if(c && c.g === "ref"){ if(j.hero === "milo") ambRire(); else if(j.hero === "gabriel") ambFrottement(); else ambSoupir(); } else if(k === "r" || (c && c.g === "aj")) ambCloche(); }catch(e){} dPublier(d => { d.c.deb = k; }); }
 function dDebHtml(j, e){
   let L = DIM_DEB[j.hero]; if(!L) return "";
   if(e.c.de >= 5) L = L.concat([{ k:"r", g:"aj", d:"a demandé un temps pour respirer", x:"Demander un temps pour respirer." }]);
@@ -204,7 +204,7 @@ async function dSauver(e, p){
   const z = document.getElementById("d_compte"); if(!z) return;
   if(!_compte.user){ z.innerHTML = typeof compteCarte === "function" ? compteCarte() : ""; return; }
   _dSauve = true; const j = dMoi();
-  const ok = await compteSauverEpisode({ id:"dimanche", quand:new Date().toISOString(), hero:j && j.hero, couleur:state.table && state.table.couleur, traces:p, maison:e.c.maison || null, consequence:"banderole" });
+  const ok = await compteSauverEpisode({ id:"dimanche", quand:new Date().toISOString(), hero:j && j.hero, couleur:state.table && state.table.couleur, traces:p, maison:e.c.maison || null, deb:e.c.deb || null, consequence:"banderole" });
   z.innerHTML = ok ? `<p class="muted">Cette journée est gardée dans ta mémoire de la série.</p>` : `<p class="muted">La sauvegarde n'a pas pu se faire cette fois.</p>`;
 }
 let _dSauve = false;
@@ -226,10 +226,16 @@ function renderDimanche(){
   const j = dMoi(), s = _salon;
   if(!j) return `<div class="card"><button onclick="goTo('intro')">Retour à l'accueil</button></div>`;
   const e = dEtat(j.id) || { t:"matin", c:{}, ok:{}, disc:false }, t = e.t;
-  const entete = (cle) => { const T = DIM_TEMPS.find(x => x.k === cle); return `<div class="hero slide-up"><div class="eyebrow">Le dimanche de la Baie · ${T.lieu}</div><h2 class="serif">${T.titre}</h2><p class="muted">${T.ambiance}</p>${dBandeau(cle)}</div>`; };
+  const entete = (cle) => { const T = DIM_TEMPS.find(x => x.k === cle); return `<div class="hero slide-up"><div class="eyebrow">Le dimanche de la Baie · ${T.lieu}</div><h2 class="serif">${T.titre}</h2><p class="muted">${T.ambiance}</p>${dBandeau(cle)}${typeof vxBarre === "function" ? vxBarre() : ""}</div>`; };
   const carte = dCarte();
   const moi = `<div class="card d-moi"><div class="sj-face">${salonFace(j.hero, 52)}</div><div><strong>${escapeHtml(j.nom || dNom(j.hero))}</strong><br><span class="tiny muted">tu joues ${dNom(j.hero)}</span></div></div>`;
   const couleur = state.table && state.table.couleur ? couleurHtml(state.table.couleur) : "";
+  if(typeof ambLieu === "function" && window._dAmbT !== t){ window._dAmbT = t; ambLieu(t === "fin" ? "soir" : t); if(t === "midi") setTimeout(ambApplaudir, 1800); if(t === "soir") setTimeout(ambCloche, 800); }
+  if(typeof vxNarrer === "function"){
+    const T0 = DIM_TEMPS.find(x => x.k === t), m0 = DIM_MATIN[j.hero];
+    const txt = t === "matin" ? T0.ambiance + " " + m0.t : t === "midi" ? T0.ambiance + " Au centre social, un voisin, Armand, entre avec une banderole peinte à la main : La maison est à nous ! Il a compris que la maison d'Éléonore allait devenir un lieu pour le quartier, et il l'a déjà annoncé au marché. Deux personnes applaudissent." : t === "soir" ? T0.ambiance : "La journée se termine.";
+    window._vxTexte = txt; vxNarrer("d" + t + (j.hero), txt);
+  }
 
   if(t === "matin"){
     const m = DIM_MATIN[j.hero], ch = e.c.matin;
@@ -266,6 +272,7 @@ function renderDimanche(){
   dJoueurs().forEach(x => { const o = dEtat(x.id); if(o && o.c.maison) maison[o.c.maison] = (maison[o.c.maison] || 0) + 1; });
   const atteint = p.filter(Boolean).length;
   setTimeout(dSophia, 0); setTimeout(() => dSauver(e, p), 0);
+  { const dl = DIM_DEB[j.hero] || [], cd = dl.concat([{k:"r",g:"aj",d:"a demandé un temps pour respirer"}]).find(x => x.k === e.c.deb); state.table.mem1 = { hero:j.hero, deb:cd ? cd.d : null, g:cd ? cd.g : null }; }
   return `<div class="hero slide-up"><div class="hero-mark">${typeof ensoMark === "function" ? ensoMark() : ""}</div><div class="eyebrow">Le dimanche de la Baie</div><h2 class="serif">La journée se termine</h2></div>`
     + couleur
     + `<div class="card"><div class="eyebrow">Tes traces</div><ul class="d-paliers">${DIM_PALIERS.map((x, n) => `<li class="${p[n] ? "ok" : ""}"><strong>${x.nom}</strong> · ${x.sens}</li>`).join("")}</ul><p class="tiny muted">Les paliers ne sont pas un classement : ils racontent ce que tu as expérimenté (${atteint} sur 5).</p></div>`
@@ -273,7 +280,7 @@ function renderDimanche(){
     + `<div class="card terre"><div class="eyebrow">Ce qui reste pour la suite</div>${dFinDebordement()}<p>Armand garde sa banderole. On la retrouvera dans un prochain épisode, peut-être retournée, avec autre chose peint au dos.</p></div>`
     + `<div class="card" id="d_compte"></div>`
     + `<div class="card"><div class="eyebrow">Sophia</div><div id="d_sophia"></div></div>`
-    + `<div class="card"><div class="eyebrow">Et après ?</div><p class="muted">Les joueurs qui sont au même palier pourront continuer ensemble dans une suite, s'ils le souhaitent ; les autres pourront choisir une autre aventure ou quitter la table, sans aucune pénalité. Cette suite n'est pas encore écrite.</p><div class="row"><button class="ghost" onclick="salonQuitter()">Quitter la table</button></div></div>`;
+    + `<div class="card"><div class="eyebrow">Et après ?</div><p class="muted">Les joueurs qui sont au même palier pourront continuer ensemble dans une suite, s'ils le souhaitent ; les autres pourront choisir une autre aventure ou quitter la table, sans aucune pénalité. Cette suite n'est pas encore écrite.</p><div class="row"><button class="or" onclick="e2Demarrer()">Épisode 2 · La banderole retournée</button><button class="ghost" onclick="salonQuitter()">Quitter la table</button></div></div>`;
 }
 
 if(typeof H_RENDER !== "undefined") H_RENDER.d_play = renderDimanche;

@@ -46,7 +46,7 @@ function compteZone(){
     const dern = eps[eps.length - 1];
     return `<p class="tiny muted">Connecté·e : ${escapeHtml(_compte.user.email || "")}</p>
       ${dern ? `<p>Ta dernière partie : <strong>Le dimanche de la Baie</strong>. Armand garde sa banderole : on la retrouvera dans un prochain épisode.</p><p class="tiny muted">${eps.length} épisode${eps.length > 1 ? "s" : ""} gardé${eps.length > 1 ? "s" : ""} en mémoire.</p>` : `<p class="muted">Rien en mémoire pour l'instant : à la fin de ta prochaine journée à plusieurs, elle sera gardée ici.</p>`}
-      <div class="row"><button class="ghost sm" onclick="compteDeconnecter()">Me déconnecter</button></div>`;
+      <div class="row">${dern && dern.hero && typeof e2Demarrer === "function" ? `<button class="or sm" onclick="e2Demarrer('${dern.hero}')">Épisode 2 · La banderole retournée</button>` : ""}<button class="ghost sm" onclick="compteDeconnecter()">Me déconnecter</button></div>`;
   }
   return `<p class="muted">Garde la mémoire de tes parties : ce qui s'est passé au quartier te sera rappelé dans les prochains épisodes. Tu reçois un lien par e-mail, sans mot de passe.</p>
     <div class="row" style="gap:8px"><input id="compte_mail" type="email" class="salon-input" autocomplete="email" placeholder="ton adresse e-mail" onkeydown="if(event.key==='Enter')compteConnecter()"><button class="ghost" onclick="compteConnecter()">Recevoir le lien</button></div>
