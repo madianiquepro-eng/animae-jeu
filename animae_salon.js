@@ -3,13 +3,13 @@
 const SALON_URL = "https://bjndtclbxfdpbacoxzwg.supabase.co";
 const SALON_KEY = "sb_publishable_67IT_SClZaAdETuxBtlR9Q_GefhVlyc";
 const SALON_HEROS = [
-  { k:"milo", nom:"Milo", age:9, jouable:false },
-  { k:"inaya", nom:"Inaya", age:16, jouable:false },
-  { k:"noe", nom:"Noé", age:24, jouable:false },
-  { k:"hana", nom:"Hana", age:37, jouable:false },
+  { k:"milo", nom:"Milo", age:9, jouable:true },
+  { k:"inaya", nom:"Inaya", age:16, jouable:true },
+  { k:"noe", nom:"Noé", age:24, jouable:true },
+  { k:"hana", nom:"Hana", age:37, jouable:true },
   { k:"maela", nom:"Maëla", age:42, jouable:true },
-  { k:"gabriel", nom:"Gabriel", age:52, jouable:false },
-  { k:"eleonore", nom:"Éléonore", age:68, jouable:false }
+  { k:"gabriel", nom:"Gabriel", age:52, jouable:true },
+  { k:"eleonore", nom:"Éléonore", age:68, jouable:true }
 ];
 const SALON_MAX = 7;
 const SALON_FACES = { maela:"img/f_maela.jpg", inaya:"img/f_inaya.jpg", gabriel:"img/f_gabriel.jpg", eleonore:"img/f_eleonore.jpg", milo:"img/f_milo.jpg", noe:"img/f_noe.jpg", hana:"img/f_hana.jpg" };
@@ -51,6 +51,56 @@ function salonNetOnline(code, meId, onPeers, onFail){
 }
 
 // ---------- Logique du salon ----------
+
+// ---------- Couleur de partie (extension à valider avec Dina) ----------
+const SALON_COULEURS = {
+  axes: [
+    {k:"limites", nom:"S'affirmer et poser ses limites"},
+    {k:"appui", nom:"Demander de l'aide et accepter l'appui"},
+    {k:"transmettre", nom:"Transmettre et se transmettre en famille"},
+    {k:"place", nom:"Prendre sa place dans un collectif"},
+    {k:"changement", nom:"Traverser un changement"}],
+  themes: [
+    {k:"loyaute", nom:"Conflit de loyauté"},
+    {k:"surcharge", nom:"Surcharge et épuisement"},
+    {k:"nondit", nom:"Non-dit et malentendu"},
+    {k:"role", nom:"Départ, arrivée ou deuil de rôle"},
+    {k:"decision", nom:"Décision partagée"}],
+  contextes: [
+    {k:"famille", nom:"En famille"},
+    {k:"couple", nom:"En couple ou entre amis"},
+    {k:"travail", nom:"Au travail (équipe, hiérarchie)"},
+    {k:"asso", nom:"En association ou en voisinage"},
+    {k:"soi", nom:"Seul·e face à soi-même"}],
+  envs: [
+    {k:"atelier", nom:"L'atelier"},
+    {k:"maison", nom:"La maison"},
+    {k:"marche", nom:"Le marché"},
+    {k:"mer", nom:"Le bord de mer"},
+    {k:"centre", nom:"Le centre social"}]
+};
+const SALON_COUL_CLES = [["axe","axes","Axe : ce qu'on travaille"],["theme","themes","Thème : ce qui se passe"],["contexte","contextes","Contexte : où ça se joue"],["env","envs","Environnement : le décor"]];
+function couleurNom(cat, k){ const x = (SALON_COULEURS[cat]||[]).find(y => y.k === k); return x ? x.nom : ""; }
+function couleurHote(){ const s = _salon; if(!s) return null; const h = salonPlayers()[0]; return h ? (h.id === s.me.id ? s.me.couleur : (s.peers[h.id] || {}).couleur) || {} : {}; }
+function salonCouleurChoisir(cle, k){ const s = _salon; if(!s || salonHote() !== s.me.id) return; s.me.couleur = Object.assign({}, s.me.couleur || {}); if(s.me.couleur[cle] === k) delete s.me.couleur[cle]; else s.me.couleur[cle] = k; salonSync(); }
+function salonCouleurResolue(){
+  const c = Object.assign({}, couleurHote() || {});
+  SALON_COUL_CLES.forEach(([cle,cat]) => { if(!c[cle]){ const L = SALON_COULEURS[cat]; c[cle] = L[Math.floor(Math.random()*L.length)].k; } });
+  return c;
+}
+function couleurHtml(c, titre){
+  if(!c) return "";
+  return `<div class="card terre couleur-card"><div class="eyebrow">${titre || "Couleur de la partie"}</div><div class="couleur-liste">${SALON_COUL_CLES.map(([cle,cat,lib]) => `<div class="couleur-ligne"><span class="tiny muted">${lib.split(" :")[0]}</span><strong>${escapeHtml(couleurNom(cat, c[cle]))}</strong></div>`).join("")}</div></div>`;
+}
+function renderCouleurSalon(){
+  const s = _salon, hote = salonHote() === s.me.id, c = couleurHote() || {};
+  if(!hote){
+    const n = SALON_COUL_CLES.filter(([cle]) => c[cle]).length;
+    return `<div class="card"><div class="eyebrow">Couleur de la partie</div>${n ? SALON_COUL_CLES.filter(([cle]) => c[cle]).map(([cle,cat,lib]) => `<p class="tiny"><span class="muted">${lib.split(" :")[0]} : </span><strong>${escapeHtml(couleurNom(cat, c[cle]))}</strong></p>`).join("") : `<p class="muted">L'hôte n'a rien imposé : ce qui reste libre sera tiré au sort au lancement.</p>`}</div>`;
+  }
+  return `<div class="card"><div class="eyebrow">Couleur de la partie</div><p class="muted" style="margin-bottom:8px">Choisis ce que vous voulez expérimenter ensemble. Ce que tu laisses libre est tiré au sort au lancement.</p>
+    ${SALON_COUL_CLES.map(([cle,cat,lib]) => `<div class="couleur-bloc"><div class="tiny muted">${lib}</div><div class="couleur-chips">${SALON_COULEURS[cat].map(x => `<button class="chip ${c[cle]===x.k?'on':''}" aria-pressed="${c[cle]===x.k}" onclick="salonCouleurChoisir('${cle}','${x.k}')">${x.nom}</button>`).join("")}</div></div>`).join("")}</div>`;
+}
 function salonPlayers(){
   const s = _salon; if(!s) return [];
   const all = [s.me, ...Object.values(s.peers)];
@@ -71,6 +121,7 @@ function salonSync(){
   const go = Object.values(s.peers).find(p => p.go);
   if(go && !s.parti) salonDemarrer(go.go);
   if(state.phase === "h_salon") salonRafraichir();
+  if(state.phase === "d_play" && typeof dRafraichir === "function") dRafraichir();
 }
 function salonRafraichir(){ const app = document.getElementById("app"); if(!app) return; const act = document.activeElement; if(act && act.id === "salon_nom") return; app.innerHTML = `<div class="fade-in">${renderSalon()}</div>`; }
 async function salonOuvrir(code, creer){
@@ -100,14 +151,16 @@ function salonHote(){ const L = salonPlayers(); return L.length ? L[0].id : null
 function salonPeutLancer(){ const L = salonPlayers(); return L.length >= 1 && L.every(p => p.hero && p.pret); }
 function salonLancer(){
   const s = _salon; if(!s || salonHote() !== s.me.id || !salonPeutLancer()) return;
-  const go = { code:s.code, graine:Math.floor(Math.random()*1e9), joueurs:salonPlayers().map(p => ({ id:p.id, nom:p.nom, hero:p.hero })) };
+  const go = { code:s.code, couleur:salonCouleurResolue(), graine:Math.floor(Math.random()*1e9), joueurs:salonPlayers().map(p => ({ id:p.id, nom:p.nom, hero:p.hero })) };
   s.me.go = go; salonSync(); salonDemarrer(go);
 }
 function salonDemarrer(go){
   const s = _salon; if(!s || s.parti) return; s.parti = true;
-  state.table = { code:go.code, joueurs:go.joueurs, moi:go.joueurs.find(j => j.id === s.me.id) || null };
+  state.table = { code:go.code, couleur:go.couleur || null, joueurs:go.joueurs, moi:go.joueurs.find(j => j.id === s.me.id) || null };
   const moi = state.table.moi;
-  if(moi && moi.hero === "maela"){ salonGarder(); hNew("maela_1"); } else { salonGarder(); state.phase = "h_table"; render(); }
+  salonGarder();
+  if(typeof dDemarrer === "function"){ state.table.couleur = go.couleur || null; dDemarrer(); }
+  else { state.phase = "h_table"; render(); }
 }
 function salonGarder(){ /* la table reste connectée pendant la partie : le lien se rouvre via la présence */ }
 
@@ -128,6 +181,7 @@ function renderSalon(){
     <div class="card"><label class="eyebrow" for="salon_nom">Ton prénom</label>
       <input id="salon_nom" class="salon-input" maxlength="20" autocomplete="given-name" value="${escapeHtml(moi.nom)}" placeholder="Comment les autres t'appellent ?" oninput="salonNomSaisi(this.value)" onchange="salonSync()"></div>
     ${s.notice ? `<div class="card terre" role="status"><p>${escapeHtml(s.notice)}</p></div>` : ""}
+    ${renderCouleurSalon()}
     <div class="card"><div class="eyebrow">Choisis ton personnage</div>
       ${libres.length ? `<div class="salon-grid">${grille}</div>` : `<p class="muted">Tous les personnages sont pris.</p>`}
       <div class="row" style="margin-top:14px">${moi.hero ? `<button class="${moi.pret?'ghost':'or'} lg" onclick="salonPret()">${moi.pret?"Je ne suis plus prêt·e":"Je suis prêt·e"}</button>` : `<span class="muted">Touche une carte pour jouer ce personnage.</span>`}</div></div>
@@ -194,6 +248,6 @@ if(typeof H_RENDER !== "undefined"){
       <p>L'aventure de ${h ? h.nom : "ton personnage"} est encore en écriture. Elle rejoindra la table dès qu'elle sera prête.</p>
       <p class="muted">En attendant, tu peux jouer l'aventure de Maëla, ou revenir à l'accueil.</p>
       <div class="row" style="justify-content:center"><button class="or" onclick="hNew('maela_1')">Jouer Maëla en attendant</button><button class="ghost" onclick="salonQuitter()">Retour à l'accueil</button></div></div>
-      <div class="card"><div class="eyebrow">À cette table</div><div class="salon-table">${t.joueurs.map(p => { const x = SALON_HEROS.find(y => y.k === p.hero); return `<div class="salon-joueur"><div class="sj-face">${x ? salonFace(x.k, 44) : ""}</div><div class="sj-txt"><strong>${escapeHtml(p.nom || "Joueur")}</strong><br><span class="tiny">joue ${x ? x.nom : ""}</span></div></div>`; }).join("")}</div></div>`;
+      ${couleurHtml(t.couleur)}<div class="card"><div class="eyebrow">À cette table</div><div class="salon-table">${t.joueurs.map(p => { const x = SALON_HEROS.find(y => y.k === p.hero); return `<div class="salon-joueur"><div class="sj-face">${x ? salonFace(x.k, 44) : ""}</div><div class="sj-txt"><strong>${escapeHtml(p.nom || "Joueur")}</strong><br><span class="tiny">joue ${x ? x.nom : ""}</span></div></div>`; }).join("")}</div></div>`;
   };
 }

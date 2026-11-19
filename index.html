@@ -566,6 +566,20 @@ li::marker{color:var(--or-terre)}
   .btn,button{padding:11px 18px;font-size:.9rem}
   .hero{padding:32px 20px 28px}
 }
+
+.couleur-bloc{margin-top:12px}.couleur-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:1px solid var(--line,#d9c9a8);background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;color:inherit}
+.chip.on{background:#2a1a10;color:#fff;border-color:#2a1a10}
+.couleur-liste{display:grid;gap:8px;margin-top:8px}.couleur-ligne{display:flex;flex-direction:column;gap:1px}
+
+.d-temps{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}.d-t{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid #d9c9a8;color:#7a6a4f}
+.d-t.on{background:#2a1a10;color:#fff;border-color:#2a1a10}.d-t.fait{background:#efe4cc}
+.d-moi{display:flex;gap:12px;align-items:center}.d-choix{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.d-c{text-align:left;border:1px solid #d9c9a8;background:#fff;border-radius:14px;padding:12px 14px;font-size:15px;cursor:pointer;color:inherit}
+.d-c.on{border-color:#2a1a10;background:#f6ecd8;box-shadow:inset 0 0 0 1px #2a1a10}
+.echo{background:#f6ecd8;border-left:3px solid #b9743f;padding:10px 12px;border-radius:8px;margin-bottom:10px}
+.d-cercle{border-top:1px solid #eadfc7;padding:10px 0}.d-paliers{list-style:none;padding:0;margin:8px 0}.d-paliers li{padding:6px 0;color:#9a8a6f}.d-paliers li.ok{color:#2a1a10}.d-paliers li.ok:before{content:"✓ "}
+.sophia-lecture{line-height:1.55}
 </style>
 </head>
 <body>
@@ -579,6 +593,7 @@ li::marker{color:var(--or-terre)}
 <script src="animae_monde.js"></script>
 <script src="lib/supabase.js"></script>
 <script src="animae_salon.js"></script>
+<script src="animae_dimanche.js"></script>
 <script>
 /* =========================================================================
    ANIMAE® V2.1 — Prototype vertical

@@ -199,7 +199,7 @@ const H_RENDER = {
     const vuesTot = Object.values(a.scenes).reduce((n,l)=>n+l.length,0);
     setTimeout(hIAInit, 0);
     return `<div class="hero"><div class="hero-mark">${ensoMark()}</div><div class="eyebrow">${a.titre} · ${e.statut}</div>
-      <h2 class="serif" style="margin-top:12px">${e.titre}</h2></div>
+      <h2 class="serif" style="margin-top:12px">${e.titre}</h2></div>${typeof couleurHtml==="function"&&h.couleur?couleurHtml(h.couleur,"Couleur de cette partie"):""}
     ${hJauges()}
     ${hSceneImg(h.fin==="report"||h.fin==="corps"?"DEHORS":h.fin==="relais"||h.fin==="partage"?"final":"ATELIER", null, e.titre, "Le grand jour") || ""}
     ${h.fin==="partage" ? `<div class="card" style="padding:0;overflow:hidden"><img src="img/c_atelier_equipe.jpg" alt="Maëla à l'Atelier, entourée de deux personnes qui l'aident" style="display:block;width:100%;max-height:420px;object-fit:cover;object-position:50% 25%"></div>`:""}

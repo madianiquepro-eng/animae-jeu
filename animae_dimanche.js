@@ -1,0 +1,189 @@
+// ANIMAE — « Le dimanche de la Baie » : première aventure commune (V1, textes à valider avec Dina).
+// Trois temps (matin, midi, soir), un fil par héros, des écrans partagés par la présence du salon.
+// Les gestes de chaque joueur sont publiés dans _salon.me.d ; les autres joueurs les voient.
+
+const DIM_TEMPS = [
+  { k:"matin", titre:"Le matin", lieu:"Au marché", ambiance:"Les étals s'installent. Dans le quartier, on parle de la maison d'Éléonore et de ce qu'elle va devenir." },
+  { k:"midi", titre:"Le midi", lieu:"Au centre social", ambiance:"Tout le monde se retrouve autour de la grande table. Chacun peut parler, poser une limite, offrir un appui, ou passer." },
+  { k:"soir", titre:"Le soir", lieu:"Au bord de mer", ambiance:"La lumière baisse. On s'assoit en cercle et on revient sur la journée." }
+];
+
+// Gestes : ec écouter, di dire, ga garder pour soi, de demander, li limite, aj ajuster / confier, sh partager
+const DIM_MATIN = {
+  maela:   { t:"Au marché, on parle de la maison d'Éléonore. Toi, tu te sens déjà partagée entre deux maisons.",
+    c:[ {k:"a", g:"ec", x:"Écouter d'abord ce que disent les autres."}, {k:"b", g:"di", x:"Dire ce que tu aimerais, même si ce n'est pas encore clair."}, {k:"c", g:"ga", x:"Rester en retrait, pour l'instant."} ] },
+  milo:    { t:"Tu as quelque chose dans ta poche que tu ne veux pas montrer. Un grand te demande ce que c'est.",
+    c:[ {k:"a", g:"li", x:"Dire « c'est à moi » et t'éloigner."}, {k:"b", g:"de", x:"Dire « j'ai besoin d'aide », sans tout raconter."}, {k:"c", g:"di", x:"Tout raconter d'un coup."} ] },
+  inaya:   { t:"Tu as entendu deux versions du projet de maison : l'une dit qu'on la garde pour le quartier, l'autre qu'on la vend.",
+    c:[ {k:"a", g:"sh", x:"Partager ce que tu as entendu avec Noé."}, {k:"b", g:"ga", x:"Le garder pour toi, pour l'instant."}, {k:"c", g:"de", x:"Demander à Milo ce qu'il a entendu de son côté."} ] },
+  noe:     { t:"Gabriel te propose de prendre le relais au centre social, alors que tu penses à partir.",
+    c:[ {k:"a", g:"di", x:"Dire que tu y réfléchis."}, {k:"b", g:"de", x:"Demander plus de détails sur ce que cela implique."}, {k:"c", g:"ga", x:"Changer de sujet."} ] },
+  hana:    { t:"C'est toi qui coordonnes la rencontre de midi. Il y a beaucoup à faire.",
+    c:[ {k:"a", g:"ga", x:"Tout prendre en charge toi-même."}, {k:"b", g:"aj", x:"Choisir une tâche précise et la confier à quelqu'un."}, {k:"c", g:"ga", x:"Remettre à plus tard."} ] },
+  gabriel: { t:"Ton rôle au centre social s'achève bientôt. Tu y penses en traversant le marché.",
+    c:[ {k:"a", g:"aj", x:"Noter ce que tu aimerais transmettre à la personne qui prendra le relais."}, {k:"b", g:"di", x:"En parler à Hana."}, {k:"c", g:"ga", x:"Faire comme si de rien n'était."} ] },
+  eleonore:{ t:"Tu aimerais savoir ce que ta maison représente pour les autres avant de dire ce que toi, tu veux en faire.",
+    c:[ {k:"a", g:"de", x:"Poser la question à quelqu'un."}, {k:"b", g:"ec", x:"Écouter les conversations, sans rien dire."}, {k:"c", g:"di", x:"Dire tout de suite ce que toi, tu veux."} ] }
+};
+const DIM_GESTE = { ec:"a écouté", di:"a dit ce qu'il ou elle pensait", ga:"a gardé quelque chose pour soi", de:"a demandé de l'aide ou une précision", li:"a posé une limite", aj:"a ajusté sa façon de faire (en confiant, en notant)", sh:"a partagé ce qu'il ou elle savait" };
+const DIM_MIDI = [
+  { k:"souhait", g:"di", x:"Exprimer un souhait." },
+  { k:"limite", g:"li", x:"Poser une limite." },
+  { k:"appui", g:"de", x:"Offrir un appui à quelqu'un." },
+  { k:"passer", g:"ga", x:"Passer, sans rien dire." }
+];
+const DIM_MAISON = [
+  { k:"quartier", x:"Qu'elle serve au quartier." },
+  { k:"famille", x:"Qu'elle reste dans la famille." },
+  { k:"vendre", x:"Qu'elle soit vendue." },
+  { k:"pas_encore", x:"Je ne sais pas encore." }
+];
+const DIM_PALIERS = [
+  { n:1, nom:"Remarquer", sens:"Tu as regardé ce qui se passe en toi." },
+  { n:2, nom:"Discerner", sens:"Tu as pris un Moment de discernement." },
+  { n:3, nom:"Ajuster", sens:"Tu as dosé ta force ou posé une limite." },
+  { n:4, nom:"S'allier", sens:"Tu as demandé ou offert un appui." },
+  { n:5, nom:"Transmettre", sens:"Tu as offert à quelqu'un une observation ou une question qu'il était libre d'accueillir." }
+];
+
+function dNom(h){ const x = (typeof SALON_HEROS !== "undefined") ? SALON_HEROS.find(y => y.k === h) : null; return x ? x.nom : h; }
+function dJoueurs(){ return (state.table && state.table.joueurs) || []; }
+function dMoi(){ return state.table && state.table.moi; }
+function dEtat(id){ const s = _salon; if(!s) return null; if(id === s.me.id) return s.me.d || null; const p = s.peers[id]; return p && p.d ? p.d : null; }
+function dPresents(){ const s = _salon; if(!s) return []; return dJoueurs().filter(j => j.id === s.me.id || s.peers[j.id]); }
+function dPublier(maj){ const s = _salon; if(!s) return; s.me.d = Object.assign({ t:"matin", c:{}, ok:{}, disc:false }, s.me.d || {}); maj(s.me.d); salonSync(); dRafraichir(); }
+function dRafraichir(){ if(state.phase !== "d_play") return; const app = document.getElementById("app"); if(app) app.innerHTML = `<div class="fade-in">${renderDimanche()}</div>`; }
+
+function dDemarrer(){
+  state.phase = "d_play";
+  const s = _salon; if(s){ s.me.d = { t:"matin", c:{}, ok:{}, disc:false }; salonSync(); }
+  render();
+}
+function dChoisirMatin(k){ dPublier(d => { d.c.matin = k; }); }
+function dChoisirMidi(k){ dPublier(d => { d.c.midi = k; if(k !== "appui") delete d.c.cible; }); }
+function dCible(id){ dPublier(d => { d.c.cible = id; }); }
+function dMaison(k){ dPublier(d => { d.c.maison = k; }); }
+function dDiscerner(){ dPublier(d => { d.disc = true; }); }
+function dTerminer(t){ dPublier(d => { d.ok[t] = true; }); }
+function dSuite(t){ const i = DIM_TEMPS.findIndex(x => x.k === t); const n = DIM_TEMPS[i + 1]; dPublier(d => { d.t = n ? n.k : "fin"; }); }
+function dSoirChoisir(id, type){ dPublier(d => { d.c.soir = { de:id, type:type }; }); }
+
+function dGestesDe(id){
+  const e = dEtat(id), j = dJoueurs().find(x => x.id === id); if(!e || !j) return [];
+  const L = [], m = DIM_MATIN[j.hero], cm = m && m.c.find(x => x.k === e.c.matin);
+  if(cm) L.push(`${dNom(j.hero)} ${DIM_GESTE[cm.g]} (${cm.x.replace(/\.$/, "")}).`);
+  const mi = DIM_MIDI.find(x => x.k === e.c.midi);
+  if(mi && mi.k !== "passer") L.push(`${dNom(j.hero)} ${mi.k === "appui" && e.c.cible ? "a offert un appui à " + dNom((dJoueurs().find(x => x.id === e.c.cible) || {}).hero) : mi.k === "souhait" ? "a exprimé un souhait" : "a posé une limite"}.`);
+  return L;
+}
+function dPaliers(e){
+  const j = dMoi(), m = j && DIM_MATIN[j.hero], cm = m && e && m.c.find(x => x.k === e.c.matin);
+  const g = [cm && cm.g, e && e.c.midi === "limite" ? "li" : (e && e.c.midi === "appui" ? "de" : null)];
+  const p = [false, false, false, false, false];
+  p[0] = !!(e && e.ok && e.ok.matin);
+  p[1] = !!(e && e.disc);
+  p[2] = g.includes("aj") || g.includes("li");
+  p[3] = g.includes("de") || !!(e && e.c.midi === "appui");
+  p[4] = !!(e && e.c.soir && e.c.soir.de);
+  return p;
+}
+function dAttente(t){
+  const s = _salon; if(!s) return [];
+  return dPresents().filter(j => { if(j.id === s.me.id) return false; const e = dEtat(j.id); return !(e && e.ok && e.ok[t]); });
+}
+function dEcho(){
+  // L'écho d'Inaya vers Noé : son choix du matin change la scène de midi.
+  const j = dMoi(); if(!j || j.hero !== "noe") return "";
+  const ina = dJoueurs().find(x => x.hero === "inaya"), e = ina && dEtat(ina.id);
+  if(!ina || !e || !e.c.matin) return "";
+  return e.c.matin === "a" ? `<p class="echo"><strong>Écho · </strong>${escapeHtml(ina && dNom("inaya"))} t'a transmis ce qu'elle avait entendu : deux versions du projet de maison. Tu peux poser une question plus précise.</p>` : `<p class="echo"><strong>Écho · </strong>Tu n'as pas eu cette information. Tu peux la chercher auprès d'Éléonore.</p>`;
+}
+
+function dContexteSophia(){
+  const c = state.table && state.table.couleur, L = [];
+  if(c) L.push("Couleur de la partie : " + [couleurNom("axes", c.axe), couleurNom("themes", c.theme), couleurNom("contextes", c.contexte), couleurNom("envs", c.env)].join(" / ") + ".");
+  dJoueurs().forEach(j => dGestesDe(j.id).forEach(g => L.push(g)));
+  const maison = {}; dJoueurs().forEach(j => { const e = dEtat(j.id); if(e && e.c.maison) maison[e.c.maison] = (maison[e.c.maison] || 0) + 1; });
+  const lib = { quartier:"servir au quartier", famille:"rester dans la famille", vendre:"être vendue", pas_encore:"ne pas encore décider" };
+  Object.keys(maison).forEach(k => L.push(`${maison[k]} joueur(s) souhaitent que la maison d'Éléonore puisse ${lib[k]}.`));
+  return L.join("\n");
+}
+async function dSophia(){
+  const zone = document.getElementById("d_sophia"); if(!zone) return;
+  zone.innerHTML = `<p class="muted">Sophia relit la journée…</p>`;
+  try{
+    const r = await fetch(SALON_URL + "/functions/v1/sophia", { method:"POST", headers:{ "content-type":"application/json" },
+      body:JSON.stringify({ contexte:dContexteSophia(), question:"Relis cette journée de groupe : ce qui a été observé, ce qui peut être supposé, et ce qui reste à demander. Reste prudente, ne juge personne." }) });
+    const d = await r.json(); if(!d.texte) throw new Error("vide");
+    zone.innerHTML = `<div class="sophia-lecture">${escapeHtml(d.texte).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>")}</div>`;
+  }catch(e){
+    zone.innerHTML = `<p class="muted">Sophia ne peut pas répondre pour l'instant. Voici simplement ce qui a été observé :</p><ul>${dJoueurs().flatMap(j => dGestesDe(j.id)).map(g => `<li>${escapeHtml(g)}</li>`).join("")}</ul>`;
+  }
+}
+
+function dBandeau(t){
+  const i = DIM_TEMPS.findIndex(x => x.k === t);
+  return `<div class="d-temps" role="list">${DIM_TEMPS.map((x, n) => `<span role="listitem" class="d-t ${n === i ? "on" : n < i ? "fait" : ""}">${x.titre}</span>`).join("")}</div>`;
+}
+function dDiscernerHtml(e){
+  if(e && e.disc) return `<div class="card terre"><div class="eyebrow">Moment de discernement</div><p><strong>Ce que je sais</strong> (les faits) · <strong>Ce que je suppose</strong> (mes hypothèses) · <strong>Ce que je pourrais demander</strong> (aux autres ou à moi).</p><p class="muted tiny">Tu peux le garder en tête pour la suite. Ce moment est libre.</p></div>`;
+  return `<div class="row"><button class="ghost sm" onclick="dDiscerner()">Prendre un Moment de discernement (facultatif)</button></div>`;
+}
+function dAttenteHtml(t){
+  const att = dAttente(t);
+  if(!att.length) return "";
+  return `<div class="card"><p class="muted">On attend ${att.map(j => escapeHtml(j.nom || dNom(j.hero))).join(", ")}…</p><div class="row"><button class="ghost sm" onclick="dSuite('${t}')">Continuer sans attendre</button></div></div>`;
+}
+
+function renderDimanche(){
+  const j = dMoi(), s = _salon;
+  if(!j) return `<div class="card"><button onclick="goTo('intro')">Retour à l'accueil</button></div>`;
+  const e = dEtat(j.id) || { t:"matin", c:{}, ok:{}, disc:false }, t = e.t;
+  const entete = (cle) => { const T = DIM_TEMPS.find(x => x.k === cle); return `<div class="hero slide-up"><div class="eyebrow">Le dimanche de la Baie · ${T.lieu}</div><h2 class="serif">${T.titre}</h2><p class="muted">${T.ambiance}</p>${dBandeau(cle)}</div>`; };
+  const moi = `<div class="card d-moi"><div class="sj-face">${salonFace(j.hero, 52)}</div><div><strong>${escapeHtml(j.nom || dNom(j.hero))}</strong><br><span class="tiny muted">tu joues ${dNom(j.hero)}</span></div></div>`;
+  const couleur = state.table && state.table.couleur ? couleurHtml(state.table.couleur) : "";
+
+  if(t === "matin"){
+    const m = DIM_MATIN[j.hero], ch = e.c.matin;
+    return entete("matin") + moi + `<div class="card"><p>${m.t}</p><div class="d-choix">${m.c.map(c => `<button class="d-c ${ch === c.k ? "on" : ""}" aria-pressed="${ch === c.k}" onclick="dChoisirMatin('${c.k}')">${c.x}</button>`).join("")}</div></div>`
+      + dDiscernerHtml(e)
+      + (ch && !e.ok.matin ? `<div class="row"><button class="or lg" onclick="dTerminer('matin')">J'ai fait mon choix</button></div>` : "")
+      + (e.ok.matin ? dAttenteHtml("matin") + (dAttente("matin").length ? "" : `<div class="row"><button class="or lg" onclick="dSuite('matin')">Aller au centre social</button></div>`) : "")
+      + couleur;
+  }
+  if(t === "midi"){
+    const autres = dJoueurs().filter(x => x.id !== j.id);
+    return entete("midi") + moi + dEcho()
+      + `<div class="card"><div class="eyebrow">Ce que tu fais à la grande table</div><div class="d-choix">${DIM_MIDI.map(c => `<button class="d-c ${e.c.midi === c.k ? "on" : ""}" aria-pressed="${e.c.midi === c.k}" onclick="dChoisirMidi('${c.k}')">${c.x}</button>`).join("")}</div>
+        ${e.c.midi === "appui" ? `<div class="eyebrow" style="margin-top:12px">À qui ?</div><div class="d-choix">${autres.map(a => `<button class="d-c ${e.c.cible === a.id ? "on" : ""}" onclick="dCible('${a.id}')">${escapeHtml(a.nom || dNom(a.hero))} (${dNom(a.hero)})</button>`).join("") || `<p class="muted">Personne d'autre à cette table.</p>`}</div>` : ""}</div>`
+      + `<div class="card"><div class="eyebrow">Une décision à tous</div><p>Que faire de la maison familiale d'Éléonore, et quelle place pourrait-elle garder dans la vie du quartier ?</p><div class="d-choix">${DIM_MAISON.map(c => `<button class="d-c ${e.c.maison === c.k ? "on" : ""}" aria-pressed="${e.c.maison === c.k}" onclick="dMaison('${c.k}')">${c.x}</button>`).join("")}</div></div>`
+      + dDiscernerHtml(e)
+      + (e.c.midi && e.c.maison && !e.ok.midi ? `<div class="row"><button class="or lg" onclick="dTerminer('midi')">J'ai terminé</button></div>` : "")
+      + (e.ok.midi ? dAttenteHtml("midi") + (dAttente("midi").length ? "" : `<div class="row"><button class="or lg" onclick="dSuite('midi')">Aller au bord de mer</button></div>`) : "")
+      + couleur;
+  }
+  if(t === "soir"){
+    const autres = dJoueurs().filter(x => x.id !== j.id && (_salon && (_salon.peers[x.id])));
+    const recu = dJoueurs().filter(x => { const o = dEtat(x.id); return o && o.c.cible === j.id && o.c.midi === "appui"; });
+    const sel = e.c.soir;
+    return entete("soir") + moi
+      + (recu.length ? `<div class="card terre"><div class="eyebrow">Un appui t'a été offert</div><p>${recu.map(x => escapeHtml(x.nom || dNom(x.hero))).join(", ")} t'a offert un appui. Tu es libre de l'accueillir ou non.</p></div>` : "")
+      + `<div class="card"><div class="eyebrow">Le cercle</div><p>Choisis une personne et un geste que tu as aperçu dans la journée. Tu peux lui offrir une observation ou une question : elle est libre de l'accueillir.</p>
+        ${autres.length ? autres.map(a => { const gs = dGestesDe(a.id); return `<div class="d-cercle"><strong>${escapeHtml(a.nom || dNom(a.hero))}</strong><p class="tiny muted">${gs.length ? gs.map(escapeHtml).join(" ") : "Pas de geste visible."}</p>
+          <div class="row"><button class="chip ${sel && sel.de === a.id && sel.type === "obs" ? "on" : ""}" onclick="dSoirChoisir('${a.id}','obs')">Lui offrir une observation</button><button class="chip ${sel && sel.de === a.id && sel.type === "q" ? "on" : ""}" onclick="dSoirChoisir('${a.id}','q')">Lui offrir une question</button></div></div>`; }).join("") : `<p class="muted">Tu es seul·e au cercle ce soir.</p>`}</div>`
+      + `<div class="row"><button class="or lg" onclick="dTerminer('soir');dSuite('soir')">Terminer la journée</button></div>` + couleur;
+  }
+  // fin
+  const p = dPaliers(e), maison = {};
+  dJoueurs().forEach(x => { const o = dEtat(x.id); if(o && o.c.maison) maison[o.c.maison] = (maison[o.c.maison] || 0) + 1; });
+  const atteint = p.filter(Boolean).length;
+  setTimeout(dSophia, 0);
+  return `<div class="hero slide-up"><div class="hero-mark">${typeof ensoMark === "function" ? ensoMark() : ""}</div><div class="eyebrow">Le dimanche de la Baie</div><h2 class="serif">La journée se termine</h2></div>`
+    + couleur
+    + `<div class="card"><div class="eyebrow">Tes traces</div><ul class="d-paliers">${DIM_PALIERS.map((x, n) => `<li class="${p[n] ? "ok" : ""}"><strong>${x.nom}</strong> · ${x.sens}</li>`).join("")}</ul><p class="tiny muted">Les paliers ne sont pas un classement : ils racontent ce que tu as expérimenté (${atteint} sur 5).</p></div>`
+    + `<div class="card"><div class="eyebrow">La maison d'Éléonore</div>${Object.keys(maison).length ? Object.keys(maison).map(k => `<p>${maison[k]} joueur(s) · ${DIM_MAISON.find(x => x.k === k).x}</p>`).join("") : `<p class="muted">Aucune réponse.</p>`}</div>`
+    + `<div class="card"><div class="eyebrow">Sophia</div><div id="d_sophia"></div></div>`
+    + `<div class="card"><div class="eyebrow">Et après ?</div><p class="muted">Les joueurs qui sont au même palier pourront continuer ensemble dans une suite, s'ils le souhaitent ; les autres pourront choisir une autre aventure ou quitter la table, sans aucune pénalité. Cette suite n'est pas encore écrite.</p><div class="row"><button class="ghost" onclick="salonQuitter()">Quitter la table</button></div></div>`;
+}
+
+if(typeof H_RENDER !== "undefined") H_RENDER.d_play = renderDimanche;
