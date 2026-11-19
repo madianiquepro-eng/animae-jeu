@@ -46,6 +46,36 @@ const DIM_PALIERS = [
   { n:5, nom:"Transmettre", sens:"Tu as offert à quelqu'un une observation ou une question qu'il était libre d'accueillir." }
 ];
 
+
+// ---------- Le basculement de midi (V3.22, à valider) ----------
+// g : ref = réflexe (l'Ombre, une protection), aj = dit autrement (Lumière), pr = prise sur la scène, pass = passer
+const DIM_DEB = {
+  milo:    [ {k:"a", g:"ref", d:"a éclaté de rire", x:"Éclater de rire, de surprise (ça sort tout seul)."}, {k:"b", g:"aj", d:"a dit qu'il avait eu un peu peur", x:"Dire « j'ai eu un peu peur »."}, {k:"c", g:"pass", d:"n'a rien dit", x:"Ne rien dire."} ],
+  hana:    [ {k:"a", g:"ref", d:"a coupé la parole un peu sèchement", x:"Couper la parole, un peu sèchement (le réflexe de celle qui tient la réunion)."}, {k:"b", g:"aj", d:"a laissé quelqu'un d'autre reprendre la réunion", x:"Laisser quelqu'un d'autre reprendre la réunion."}, {k:"c", g:"pass", d:"n'a rien dit", x:"Ne rien dire."} ],
+  gabriel: [ {k:"a", g:"ref", d:"a décroché la banderole", x:"Décrocher la banderole, alors que le voisin la tient encore."}, {k:"b", g:"aj", d:"a demandé au voisin de la poser, en douceur", x:"Demander au voisin de la poser, en douceur."}, {k:"c", g:"pass", d:"n'a rien dit", x:"Ne rien dire."} ],
+  inaya:   [ {k:"a", g:"pr", d:"a dit d'où venait la rumeur", x:"Dire d'où vient la rumeur."}, {k:"b", g:"ref", d:"s'est tue", x:"Te taire, et regarder tes chaussures."}, {k:"c", g:"pass", d:"n'a rien dit", x:"Ne rien dire."} ],
+  noe:     [ {k:"a", g:"pr", d:"a demandé à Éléonore ce qu'elle voulait annoncer", x:"Demander à Éléonore ce qu'elle voulait annoncer."}, {k:"b", g:"ref", d:"a plaisanté pour détendre l'ambiance", x:"Plaisanter vite, pour détendre l'ambiance."}, {k:"c", g:"pass", d:"n'a rien dit", x:"Ne rien dire."} ],
+  maela:   [ {k:"a", g:"ref", d:"a pris parti très vite", x:"Prendre parti tout de suite, pour que ça cesse."}, {k:"b", g:"aj", d:"a dit qu'elle se sentait partagée", x:"Dire que tu te sens partagée, et que tu as besoin d'entendre tout le monde."}, {k:"c", g:"pass", d:"n'a rien dit", x:"Ne rien dire."} ],
+  eleonore:[ {k:"a", g:"ref", d:"a lâché une phrase ironique", x:"Lâcher : « Vous avez déjà choisi la couleur de ma chambre, aussi ? »"}, {k:"b", g:"aj", d:"a dit calmement qu'elle voulait seulement ouvrir la discussion", x:"Dire calmement que tu voulais seulement ouvrir la discussion."}, {k:"c", g:"pass", d:"n'a rien dit", x:"Ne rien dire."} ]
+};
+function dEleonoreJoue(){ return dJoueurs().some(j => j.hero === "eleonore"); }
+function dToutLeMondePasse(){ const P = dPresents(); return P.length > 0 && P.every(j => { const e = dEtat(j.id), L = DIM_DEB[j.hero], c = e && L && L.find(x => x.k === e.c.deb); return c && c.g === "pass"; }); }
+function dSceneMidi(){
+  const nar = `<p>Au centre social, un voisin, Armand, entre avec une banderole peinte à la main : <strong>« La maison est à nous ! »</strong> Il a compris que la maison d'Éléonore allait devenir un lieu pour le quartier, et il l'a déjà annoncé au marché. Deux personnes applaudissent.</p>`;
+  const el = dEleonoreJoue() ? `<p class="muted">Éléonore comptait simplement ouvrir la discussion.</p>` : `<p>Éléonore, qui comptait simplement ouvrir la discussion, lâche devant tout le monde : <em>« Vous avez déjà choisi la couleur de ma chambre, aussi ? »</em></p>`;
+  return `<div class="card scene-bascule"><div class="eyebrow">La journée bascule</div>${nar}${el}<p class="muted tiny">Chacun réagit à sa manière. Un réflexe n'est pas une faute : c'est un geste qui protège quelque chose. Tu peux le laisser sortir, ou le dire autrement.</p></div>`;
+}
+function dDebordement(k){ dPublier(d => { d.c.deb = k; }); }
+function dDebHtml(j, e){
+  const L = DIM_DEB[j.hero]; if(!L) return "";
+  return `<div class="card"><div class="eyebrow">Toi, à cet instant</div><div class="d-choix">${L.map(c => `<button class="d-c ${e.c.deb === c.k ? "on" : ""}" aria-pressed="${e.c.deb === c.k}" onclick="dDebordement('${c.k}')">${c.x}</button>`).join("")}</div>
+    ${e.c.deb && (L.find(c => c.k === e.c.deb) || {}).g === "ref" ? `<p class="muted tiny" style="margin-top:8px">Ce geste te protégeait de quelque chose. Sophia pourra t'aider à le regarder, sans jugement.</p>` : ""}</div>`;
+}
+function dFinDebordement(){
+  if(dToutLeMondePasse()) return dEleonoreJoue() ? `<p>Le silence s'installe. Armand pose sa banderole sur une chaise. Une voix s'élève enfin : « Bon. Est-ce que je peux parler, maintenant ? »</p>` : `<p>Le silence s'installe. Éléonore plie elle-même la banderole, la pose sur une chaise : <em>« Bon. Est-ce que je peux parler, maintenant ? »</em></p>`;
+  return "";
+}
+
 function dNom(h){ const x = (typeof SALON_HEROS !== "undefined") ? SALON_HEROS.find(y => y.k === h) : null; return x ? x.nom : h; }
 function dJoueurs(){ return (state.table && state.table.joueurs) || []; }
 function dMoi(){ return state.table && state.table.moi; }
@@ -72,6 +102,8 @@ function dGestesDe(id){
   const e = dEtat(id), j = dJoueurs().find(x => x.id === id); if(!e || !j) return [];
   const L = [], m = DIM_MATIN[j.hero], cm = m && m.c.find(x => x.k === e.c.matin);
   if(cm) L.push(`${dNom(j.hero)} ${DIM_GESTE[cm.g]} (${cm.x.replace(/\.$/, "")}).`);
+  const dl = DIM_DEB[j.hero], cd = dl && dl.find(x => x.k === e.c.deb);
+  if(cd && cd.g !== "pass") L.push(`À midi, ${dNom(j.hero)} ${cd.d}.`);
   const mi = DIM_MIDI.find(x => x.k === e.c.midi);
   if(mi && mi.k !== "passer") L.push(`${dNom(j.hero)} ${mi.k === "appui" && e.c.cible ? "a offert un appui à " + dNom((dJoueurs().find(x => x.id === e.c.cible) || {}).hero) : mi.k === "souhait" ? "a exprimé un souhait" : "a posé une limite"}.`);
   return L;
@@ -82,7 +114,8 @@ function dPaliers(e){
   const p = [false, false, false, false, false];
   p[0] = !!(e && e.ok && e.ok.matin);
   p[1] = !!(e && e.disc);
-  p[2] = g.includes("aj") || g.includes("li");
+  const dl = j && DIM_DEB[j.hero], cd = dl && e && dl.find(x => x.k === e.c.deb);
+  p[2] = g.includes("aj") || g.includes("li") || !!(cd && cd.g === "aj");
   p[3] = g.includes("de") || !!(e && e.c.midi === "appui");
   p[4] = !!(e && e.c.soir && e.c.soir.de);
   return p;
@@ -153,12 +186,12 @@ function renderDimanche(){
   }
   if(t === "midi"){
     const autres = dJoueurs().filter(x => x.id !== j.id);
-    return entete("midi") + moi + dEcho()
+    return entete("midi") + moi + dSceneMidi() + dDebHtml(j, e) + dEcho()
       + `<div class="card"><div class="eyebrow">Ce que tu fais à la grande table</div><div class="d-choix">${DIM_MIDI.map(c => `<button class="d-c ${e.c.midi === c.k ? "on" : ""}" aria-pressed="${e.c.midi === c.k}" onclick="dChoisirMidi('${c.k}')">${c.x}</button>`).join("")}</div>
         ${e.c.midi === "appui" ? `<div class="eyebrow" style="margin-top:12px">À qui ?</div><div class="d-choix">${autres.map(a => `<button class="d-c ${e.c.cible === a.id ? "on" : ""}" onclick="dCible('${a.id}')">${escapeHtml(a.nom || dNom(a.hero))} (${dNom(a.hero)})</button>`).join("") || `<p class="muted">Personne d'autre à cette table.</p>`}</div>` : ""}</div>`
       + `<div class="card"><div class="eyebrow">Une décision à tous</div><p>Que faire de la maison familiale d'Éléonore, et quelle place pourrait-elle garder dans la vie du quartier ?</p><div class="d-choix">${DIM_MAISON.map(c => `<button class="d-c ${e.c.maison === c.k ? "on" : ""}" aria-pressed="${e.c.maison === c.k}" onclick="dMaison('${c.k}')">${c.x}</button>`).join("")}</div></div>`
       + dDiscernerHtml(e)
-      + (e.c.midi && e.c.maison && !e.ok.midi ? `<div class="row"><button class="or lg" onclick="dTerminer('midi')">J'ai terminé</button></div>` : "")
+      + (e.c.deb && e.c.midi && e.c.maison && !e.ok.midi ? `<div class="row"><button class="or lg" onclick="dTerminer('midi')">J'ai terminé</button></div>` : "")
       + (e.ok.midi ? dAttenteHtml("midi") + (dAttente("midi").length ? "" : `<div class="row"><button class="or lg" onclick="dSuite('midi')">Aller au bord de mer</button></div>`) : "")
       + couleur;
   }
@@ -182,6 +215,7 @@ function renderDimanche(){
     + couleur
     + `<div class="card"><div class="eyebrow">Tes traces</div><ul class="d-paliers">${DIM_PALIERS.map((x, n) => `<li class="${p[n] ? "ok" : ""}"><strong>${x.nom}</strong> · ${x.sens}</li>`).join("")}</ul><p class="tiny muted">Les paliers ne sont pas un classement : ils racontent ce que tu as expérimenté (${atteint} sur 5).</p></div>`
     + `<div class="card"><div class="eyebrow">La maison d'Éléonore</div>${Object.keys(maison).length ? Object.keys(maison).map(k => `<p>${maison[k]} joueur(s) · ${DIM_MAISON.find(x => x.k === k).x}</p>`).join("") : `<p class="muted">Aucune réponse.</p>`}</div>`
+    + `<div class="card terre"><div class="eyebrow">Ce qui reste pour la suite</div>${dFinDebordement()}<p>Armand garde sa banderole. On la retrouvera dans un prochain épisode, peut-être retournée, avec autre chose peint au dos.</p></div>`
     + `<div class="card"><div class="eyebrow">Sophia</div><div id="d_sophia"></div></div>`
     + `<div class="card"><div class="eyebrow">Et après ?</div><p class="muted">Les joueurs qui sont au même palier pourront continuer ensemble dans une suite, s'ils le souhaitent ; les autres pourront choisir une autre aventure ou quitter la table, sans aucune pénalité. Cette suite n'est pas encore écrite.</p><div class="row"><button class="ghost" onclick="salonQuitter()">Quitter la table</button></div></div>`;
 }
