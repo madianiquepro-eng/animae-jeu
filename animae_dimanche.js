@@ -84,7 +84,7 @@ function dPresents(){ const s = _salon; if(!s) return []; return dJoueurs().filt
 function dPublier(maj){ const s = _salon; if(!s) return; s.me.d = Object.assign({ t:"matin", c:{}, ok:{}, disc:false }, s.me.d || {}); maj(s.me.d); salonSync(); dRafraichir(); }
 function dRafraichir(){ if(state.phase !== "d_play") return; const app = document.getElementById("app"); if(app) app.innerHTML = `<div class="fade-in">${renderDimanche()}</div>`; }
 
-function dDemarrer(){
+function dDemarrer(){ _dSauve = false;
   state.phase = "d_play";
   const s = _salon; if(s){ s.me.d = { t:"matin", c:{}, ok:{}, disc:false }; salonSync(); }
   render();
@@ -154,6 +154,15 @@ async function dSophia(){
   }
 }
 
+async function dSauver(e, p){
+  if(typeof _compte === "undefined" || _dSauve) return;
+  const z = document.getElementById("d_compte"); if(!z) return;
+  if(!_compte.user){ z.innerHTML = typeof compteCarte === "function" ? compteCarte() : ""; return; }
+  _dSauve = true; const j = dMoi();
+  const ok = await compteSauverEpisode({ id:"dimanche", quand:new Date().toISOString(), hero:j && j.hero, couleur:state.table && state.table.couleur, traces:p, maison:e.c.maison || null, consequence:"banderole" });
+  z.innerHTML = ok ? `<p class="muted">Cette journée est gardée dans ta mémoire de la série.</p>` : `<p class="muted">La sauvegarde n'a pas pu se faire cette fois.</p>`;
+}
+let _dSauve = false;
 function dBandeau(t){
   const i = DIM_TEMPS.findIndex(x => x.k === t);
   return `<div class="d-temps" role="list">${DIM_TEMPS.map((x, n) => `<span role="listitem" class="d-t ${n === i ? "on" : n < i ? "fait" : ""}">${x.titre}</span>`).join("")}</div>`;
@@ -210,12 +219,13 @@ function renderDimanche(){
   const p = dPaliers(e), maison = {};
   dJoueurs().forEach(x => { const o = dEtat(x.id); if(o && o.c.maison) maison[o.c.maison] = (maison[o.c.maison] || 0) + 1; });
   const atteint = p.filter(Boolean).length;
-  setTimeout(dSophia, 0);
+  setTimeout(dSophia, 0); setTimeout(() => dSauver(e, p), 0);
   return `<div class="hero slide-up"><div class="hero-mark">${typeof ensoMark === "function" ? ensoMark() : ""}</div><div class="eyebrow">Le dimanche de la Baie</div><h2 class="serif">La journée se termine</h2></div>`
     + couleur
     + `<div class="card"><div class="eyebrow">Tes traces</div><ul class="d-paliers">${DIM_PALIERS.map((x, n) => `<li class="${p[n] ? "ok" : ""}"><strong>${x.nom}</strong> · ${x.sens}</li>`).join("")}</ul><p class="tiny muted">Les paliers ne sont pas un classement : ils racontent ce que tu as expérimenté (${atteint} sur 5).</p></div>`
     + `<div class="card"><div class="eyebrow">La maison d'Éléonore</div>${Object.keys(maison).length ? Object.keys(maison).map(k => `<p>${maison[k]} joueur(s) · ${DIM_MAISON.find(x => x.k === k).x}</p>`).join("") : `<p class="muted">Aucune réponse.</p>`}</div>`
     + `<div class="card terre"><div class="eyebrow">Ce qui reste pour la suite</div>${dFinDebordement()}<p>Armand garde sa banderole. On la retrouvera dans un prochain épisode, peut-être retournée, avec autre chose peint au dos.</p></div>`
+    + `<div class="card" id="d_compte"></div>`
     + `<div class="card"><div class="eyebrow">Sophia</div><div id="d_sophia"></div></div>`
     + `<div class="card"><div class="eyebrow">Et après ?</div><p class="muted">Les joueurs qui sont au même palier pourront continuer ensemble dans une suite, s'ils le souhaitent ; les autres pourront choisir une autre aventure ou quitter la table, sans aucune pénalité. Cette suite n'est pas encore écrite.</p><div class="row"><button class="ghost" onclick="salonQuitter()">Quitter la table</button></div></div>`;
 }

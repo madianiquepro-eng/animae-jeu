@@ -236,7 +236,8 @@ function renderAccueil(){
       <div class="row" style="gap:12px;flex-wrap:wrap"><button class="or lg" onclick="salonOuvrir(salonCode(), true)">Créer une table</button></div>
       <div class="acc-rejoindre"><label class="tiny" for="acc_code">Tu as un code ? Rejoins une table</label>
         <div class="row" style="gap:8px"><input id="acc_code" class="salon-input salon-code-in" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="CODE" value="${escapeHtml(q)}" onkeydown="if(event.key==='Enter')salonOuvrir(this.value,false)"><button class="ghost" onclick="salonOuvrir(document.getElementById('acc_code').value,false)">Rejoindre</button></div></div></section>
-    <section class="card" aria-label="Autres façons de jouer"><div class="eyebrow">Autre façon de jouer</div><p class="muted">Le parcours libre : ta propre situation, les 30 archétypes et le plateau des quatre Mondes.</p>
+    ${typeof compteCarte === "function" ? compteCarte() : ""}
+<section class="card" aria-label="Autres façons de jouer"><div class="eyebrow">Autre façon de jouer</div><p class="muted">Le parcours libre : ta propre situation, les 30 archétypes et le plateau des quatre Mondes.</p>
       <div class="row"><button class="ghost sm" onclick="startNew()">Parcours libre</button>${plateauEnCours ? `<button class="ghost sm" onclick="resumeGame()">Reprendre « ${escapeHtml(state.player.nom)} »</button>` : ""}<button class="ghost sm" onclick="goTo('tutorial')">Règles du parcours libre</button>${enCours ? `<button class="ghost sm" onclick="hNew('maela_1')">Recommencer Maëla</button>` : ""}</div></section>`;
 }
 if(typeof H_RENDER !== "undefined"){
