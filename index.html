@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2A1810">
-<meta name="description" content="ANIMAE — Un jeu de vie narratif. Choisis une situation, traverse quatre Mondes, laisse des Traces.">
+<meta name="description" content="ANIMAE — Un jeu de vie narratif. Choisis une situation, traverse quatre secteurs de vie, laisse des Traces.">
 <title>ANIMAE — Le jeu qui met la vie en mouvement</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -580,6 +580,15 @@ li::marker{color:var(--or-terre)}
 .echo{background:#f6ecd8;border-left:3px solid #b9743f;padding:10px 12px;border-radius:8px;margin-bottom:10px}
 .d-cercle{border-top:1px solid #eadfc7;padding:10px 0}.d-paliers{list-style:none;padding:0;margin:8px 0}.d-paliers li{padding:6px 0;color:#9a8a6f}.d-paliers li.ok{color:#2a1a10}.d-paliers li.ok:before{content:"✓ "}
 .sophia-lecture{line-height:1.55}
+
+.dm-carte{position:relative;border-radius:16px;overflow:hidden;margin:12px 0;box-shadow:0 2px 10px rgba(42,26,16,.18)}.dm-carte img{display:block;width:100%;height:auto}
+.dm-pin{position:absolute;transform:translate(-50%,-50%);background:rgba(253,250,243,.92);border:1.5px solid #2a1a10;border-radius:999px;padding:3px 9px;font-size:11px;white-space:nowrap}
+.dm-av{position:absolute;transform:translate(-50%,-50%);border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);transition:left 2.4s ease-in-out,top 2.4s ease-in-out;line-height:0}
+.dm-av.moi{border-color:#c9a567;box-shadow:0 0 0 3px rgba(201,165,103,.55),0 2px 6px rgba(0,0,0,.35)}
+.dj-liste{display:grid;gap:8px;margin-top:8px}.dj{display:grid;grid-template-columns:1fr 90px auto;gap:10px;align-items:center;font-size:13px}
+.dj-barre{height:8px;border-radius:99px;background:#eadfc7;overflow:hidden}.dj-barre i{display:block;height:100%;border-radius:99px;transition:width .6s}
+.dm-de{width:54px;height:54px;border-radius:12px;background:#fff;border:2px solid #2a1a10;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700}
+.dm-de.rolling{animation:dmroll .9s linear}@keyframes dmroll{to{transform:rotate(540deg)}}
 </style>
 </head>
 <body>

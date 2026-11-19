@@ -65,15 +65,60 @@ function dSceneMidi(){
   const el = dEleonoreJoue() ? `<p class="muted">Éléonore comptait simplement ouvrir la discussion.</p>` : `<p>Éléonore, qui comptait simplement ouvrir la discussion, lâche devant tout le monde : <em>« Vous avez déjà choisi la couleur de ma chambre, aussi ? »</em></p>`;
   return `<div class="card scene-bascule"><div class="eyebrow">La journée bascule</div>${nar}${el}<p class="muted tiny">Chacun réagit à sa manière. Un réflexe n'est pas une faute : c'est un geste qui protège quelque chose. Tu peux le laisser sortir, ou le dire autrement.</p></div>`;
 }
-function dDebordement(k){ dPublier(d => { d.c.deb = k; }); }
+function dDebordement(k){ dSon(); dPublier(d => { d.c.deb = k; }); }
 function dDebHtml(j, e){
-  const L = DIM_DEB[j.hero]; if(!L) return "";
+  let L = DIM_DEB[j.hero]; if(!L) return "";
+  if(e.c.de >= 5) L = L.concat([{ k:"r", g:"aj", d:"a demandé un temps pour respirer", x:"Demander un temps pour respirer." }]);
   return `<div class="card"><div class="eyebrow">Toi, à cet instant</div><div class="d-choix">${L.map(c => `<button class="d-c ${e.c.deb === c.k ? "on" : ""}" aria-pressed="${e.c.deb === c.k}" onclick="dDebordement('${c.k}')">${c.x}</button>`).join("")}</div>
     ${e.c.deb && (L.find(c => c.k === e.c.deb) || {}).g === "ref" ? `<p class="muted tiny" style="margin-top:8px">Ce geste te protégeait de quelque chose. Sophia pourra t'aider à le regarder, sans jugement.</p>` : ""}</div>`;
 }
 function dFinDebordement(){
   if(dToutLeMondePasse()) return dEleonoreJoue() ? `<p>Le silence s'installe. Armand pose sa banderole sur une chaise. Une voix s'élève enfin : « Bon. Est-ce que je peux parler, maintenant ? »</p>` : `<p>Le silence s'installe. Éléonore plie elle-même la banderole, la pose sur une chaise : <em>« Bon. Est-ce que je peux parler, maintenant ? »</em></p>`;
   return "";
+}
+
+
+// ---------- Le quartier (carte), le dé, les jauges et le son (V3.24, à valider) ----------
+const DIM_LIEUX = { matin:{ x:740, y:520, nom:"Le marché" }, midi:{ x:1170, y:560, nom:"Le centre social" }, soir:{ x:905, y:842, nom:"Le bord de mer" }, fin:{ x:905, y:842, nom:"Le bord de mer" } };
+let _dPos = {};
+function dPas(){ try{ if(typeof sonInit === "function"){ sonInit(); } if(typeof sonNote === "function" && typeof sonActif === "function" && sonActif()){ for(let i=0;i<5;i++) sonNote(150 + (i%2)*40, i*0.28, 0.1, 0.05, "triangle"); } }catch(e){} }
+function dSon(k){ try{ if(typeof sonInit === "function") sonInit(); if(typeof sonActif === "function" && !sonActif()) return; if(k === "de" && typeof sonDe === "function") sonDe(); else if(typeof sonChoix === "function") sonChoix(); }catch(e){} }
+function dCarte(){
+  const J = dJoueurs(), W = 1447, H = 1087;
+  const pins = Object.keys(DIM_LIEUX).filter(k => k !== "fin").map(k => { const L = DIM_LIEUX[k]; return `<div class="dm-pin" style="left:${L.x/W*100}%;top:${L.y/H*100}%">${L.nom}</div>`; }).join("");
+  const marq = J.filter(j => j.id === (dMoi() || {}).id || (_salon && _salon.peers[j.id])).map((j, i) => {
+    const e = dEtat(j.id) || { t:"matin" }, L = DIM_LIEUX[e.t] || DIM_LIEUX.matin;
+    const cible = { x:(L.x + i*26 - 26)/W*100, y:(L.y + 40 + (i%2)*20)/H*100 };
+    const av = _dPos[j.id] || cible; _dPos[j.id] = cible;
+    const moi = j.id === (dMoi() || {}).id;
+    return `<div class="dm-av ${moi ? "moi" : ""}" data-x="${cible.x}" data-y="${cible.y}" style="left:${av.x}%;top:${av.y}%" title="${escapeHtml(j.nom || dNom(j.hero))}">${salonFace(j.hero, 38)}</div>`;
+  }).join("");
+  setTimeout(() => { document.querySelectorAll(".dm-av").forEach(el => { const nx = el.getAttribute("data-x"), ny = el.getAttribute("data-y"); if(el.style.left !== nx + "%" || el.style.top !== ny + "%"){ el.style.left = nx + "%"; el.style.top = ny + "%"; dPas(); } }); }, 60);
+  return `<div class="dm-carte"><img src="img/quartier.jpg" alt="Carte du Quartier de la Baie : le marché, le centre social et le bord de mer" loading="lazy">${pins}${marq}</div>`;
+}
+const DIM_FX = { ec:{liens:1}, di:{cap:1}, ga:{elan:-1}, de:{liens:1,elan:1}, li:{cap:1}, aj:{ouvrage:1,elan:1}, sh:{liens:1}, ref:{elan:-1}, pr:{liens:1}, pass:{} };
+function dJaugesVal(e){
+  const j = dMoi(), v = { cap:3, liens:3, ouvrage:3, elan:3 }; if(!j || !e) return v;
+  const add = g => { const f = DIM_FX[g] || {}; for(const k in f) v[k] = Math.max(0, Math.min(6, v[k] + f[k])); };
+  const m = DIM_MATIN[j.hero], cm = m && m.c.find(x => x.k === e.c.matin); if(cm) add(cm.g);
+  const mid = { souhait:"di", limite:"li", appui:"de" }[e.c.midi]; if(mid) add(mid);
+  const dl = DIM_DEB[j.hero], cd = dl && dl.find(x => x.k === e.c.deb); if(cd) add(cd.g);
+  if(e.c.deb === "r") add("aj");
+  return v;
+}
+function dRessenti(n){ return n <= 1 ? "à bout" : n === 2 ? "fragile" : n === 3 ? "stable" : n === 4 ? "porté·e" : "plein·e"; }
+function dJaugesHtml(e){
+  const v = dJaugesVal(e);
+  return `<div class="card"><div class="eyebrow">Tes quatre secteurs</div><div class="dj-liste">${["cap","liens","ouvrage","elan"].map(k => `<div class="dj"><span class="dj-n">${H_JAUGES[k][0]}<span class="tiny muted"> · ${H_JAUGES[k][1]}</span></span><span class="dj-barre"><i style="width:${v[k]/6*100}%;background:${H_JAUGES[k][2]}"></i></span><span class="dj-v"><strong>${v[k]}</strong>/6 · ${dRessenti(v[k])}</span></div>`).join("")}</div></div>`;
+}
+function dLancerDe(){
+  dSon("de"); const n = 1 + Math.floor(Math.random() * 6);
+  const el = document.getElementById("dm_de"); if(el){ el.classList.add("rolling"); el.textContent = "…"; }
+  setTimeout(() => dPublier(d => { d.c.de = n; }), 900);
+}
+function dDeHtml(e){
+  const n = e.c.de;
+  return `<div class="card"><div class="eyebrow">Le dé du moment</div>${n ? `<div class="row" style="align-items:center;gap:14px"><div id="dm_de" class="dm-de">${n}</div><p style="margin:0">${n <= 2 ? "Le geste monte vite, presque tout seul. Tu peux quand même choisir autre chose." : n <= 4 ? "Tu sens le réflexe, et tu as un peu de marge." : "Tu as de la marge : tu peux même demander un temps pour respirer."}</p></div>` : `<p class="muted">Lance le dé pour sentir ce qui monte en toi à cet instant. Il ne décide rien à ta place.</p><div class="row"><button class="or" onclick="dLancerDe()"><span id="dm_de" class="dm-de-mini">🎲</span> Lancer le dé</button></div>`}</div>`;
 }
 
 function dNom(h){ const x = (typeof SALON_HEROS !== "undefined") ? SALON_HEROS.find(y => y.k === h) : null; return x ? x.nom : h; }
@@ -89,13 +134,13 @@ function dDemarrer(){ _dSauve = false;
   const s = _salon; if(s){ s.me.d = { t:"matin", c:{}, ok:{}, disc:false }; salonSync(); }
   render();
 }
-function dChoisirMatin(k){ dPublier(d => { d.c.matin = k; }); }
-function dChoisirMidi(k){ dPublier(d => { d.c.midi = k; if(k !== "appui") delete d.c.cible; }); }
+function dChoisirMatin(k){ dSon(); dPublier(d => { d.c.matin = k; }); }
+function dChoisirMidi(k){ dSon(); dPublier(d => { d.c.midi = k; if(k !== "appui") delete d.c.cible; }); }
 function dCible(id){ dPublier(d => { d.c.cible = id; }); }
-function dMaison(k){ dPublier(d => { d.c.maison = k; }); }
+function dMaison(k){ dSon(); dPublier(d => { d.c.maison = k; }); }
 function dDiscerner(){ dPublier(d => { d.disc = true; }); }
 function dTerminer(t){ dPublier(d => { d.ok[t] = true; }); }
-function dSuite(t){ const i = DIM_TEMPS.findIndex(x => x.k === t); const n = DIM_TEMPS[i + 1]; dPublier(d => { d.t = n ? n.k : "fin"; }); }
+function dSuite(t){ dPas(); const i = DIM_TEMPS.findIndex(x => x.k === t); const n = DIM_TEMPS[i + 1]; dPublier(d => { d.t = n ? n.k : "fin"; }); }
 function dSoirChoisir(id, type){ dPublier(d => { d.c.soir = { de:id, type:type }; }); }
 
 function dGestesDe(id){
@@ -182,12 +227,13 @@ function renderDimanche(){
   if(!j) return `<div class="card"><button onclick="goTo('intro')">Retour à l'accueil</button></div>`;
   const e = dEtat(j.id) || { t:"matin", c:{}, ok:{}, disc:false }, t = e.t;
   const entete = (cle) => { const T = DIM_TEMPS.find(x => x.k === cle); return `<div class="hero slide-up"><div class="eyebrow">Le dimanche de la Baie · ${T.lieu}</div><h2 class="serif">${T.titre}</h2><p class="muted">${T.ambiance}</p>${dBandeau(cle)}</div>`; };
+  const carte = dCarte();
   const moi = `<div class="card d-moi"><div class="sj-face">${salonFace(j.hero, 52)}</div><div><strong>${escapeHtml(j.nom || dNom(j.hero))}</strong><br><span class="tiny muted">tu joues ${dNom(j.hero)}</span></div></div>`;
   const couleur = state.table && state.table.couleur ? couleurHtml(state.table.couleur) : "";
 
   if(t === "matin"){
     const m = DIM_MATIN[j.hero], ch = e.c.matin;
-    return entete("matin") + moi + `<div class="card"><p>${m.t}</p><div class="d-choix">${m.c.map(c => `<button class="d-c ${ch === c.k ? "on" : ""}" aria-pressed="${ch === c.k}" onclick="dChoisirMatin('${c.k}')">${c.x}</button>`).join("")}</div></div>`
+    return entete("matin") + carte + moi + dJaugesHtml(e) + `<div class="card"><p>${m.t}</p><div class="d-choix">${m.c.map(c => `<button class="d-c ${ch === c.k ? "on" : ""}" aria-pressed="${ch === c.k}" onclick="dChoisirMatin('${c.k}')">${c.x}</button>`).join("")}</div></div>`
       + dDiscernerHtml(e)
       + (ch && !e.ok.matin ? `<div class="row"><button class="or lg" onclick="dTerminer('matin')">J'ai fait mon choix</button></div>` : "")
       + (e.ok.matin ? dAttenteHtml("matin") + (dAttente("matin").length ? "" : `<div class="row"><button class="or lg" onclick="dSuite('matin')">Aller au centre social</button></div>`) : "")
@@ -195,7 +241,7 @@ function renderDimanche(){
   }
   if(t === "midi"){
     const autres = dJoueurs().filter(x => x.id !== j.id);
-    return entete("midi") + moi + dSceneMidi() + dDebHtml(j, e) + dEcho()
+    return entete("midi") + carte + moi + dJaugesHtml(e) + dSceneMidi() + dDeHtml(e) + dDebHtml(j, e) + dEcho()
       + `<div class="card"><div class="eyebrow">Ce que tu fais à la grande table</div><div class="d-choix">${DIM_MIDI.map(c => `<button class="d-c ${e.c.midi === c.k ? "on" : ""}" aria-pressed="${e.c.midi === c.k}" onclick="dChoisirMidi('${c.k}')">${c.x}</button>`).join("")}</div>
         ${e.c.midi === "appui" ? `<div class="eyebrow" style="margin-top:12px">À qui ?</div><div class="d-choix">${autres.map(a => `<button class="d-c ${e.c.cible === a.id ? "on" : ""}" onclick="dCible('${a.id}')">${escapeHtml(a.nom || dNom(a.hero))} (${dNom(a.hero)})</button>`).join("") || `<p class="muted">Personne d'autre à cette table.</p>`}</div>` : ""}</div>`
       + `<div class="card"><div class="eyebrow">Une décision à tous</div><p>Que faire de la maison familiale d'Éléonore, et quelle place pourrait-elle garder dans la vie du quartier ?</p><div class="d-choix">${DIM_MAISON.map(c => `<button class="d-c ${e.c.maison === c.k ? "on" : ""}" aria-pressed="${e.c.maison === c.k}" onclick="dMaison('${c.k}')">${c.x}</button>`).join("")}</div></div>`
@@ -208,7 +254,7 @@ function renderDimanche(){
     const autres = dJoueurs().filter(x => x.id !== j.id && (_salon && (_salon.peers[x.id])));
     const recu = dJoueurs().filter(x => { const o = dEtat(x.id); return o && o.c.cible === j.id && o.c.midi === "appui"; });
     const sel = e.c.soir;
-    return entete("soir") + moi
+    return entete("soir") + carte + moi + dJaugesHtml(e)
       + (recu.length ? `<div class="card terre"><div class="eyebrow">Un appui t'a été offert</div><p>${recu.map(x => escapeHtml(x.nom || dNom(x.hero))).join(", ")} t'a offert un appui. Tu es libre de l'accueillir ou non.</p></div>` : "")
       + `<div class="card"><div class="eyebrow">Le cercle</div><p>Choisis une personne et un geste que tu as aperçu dans la journée. Tu peux lui offrir une observation ou une question : elle est libre de l'accueillir.</p>
         ${autres.length ? autres.map(a => { const gs = dGestesDe(a.id); return `<div class="d-cercle"><strong>${escapeHtml(a.nom || dNom(a.hero))}</strong><p class="tiny muted">${gs.length ? gs.map(escapeHtml).join(" ") : "Pas de geste visible."}</p>

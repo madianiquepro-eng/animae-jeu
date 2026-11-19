@@ -218,7 +218,7 @@ function renderAccueil(){
     </section>
     <section class="card acc-quartier" style="padding:0;overflow:hidden">
       <img src="img/quartier.jpg" alt="Carte illustrée du Quartier de la Baie : l'Atelier, chez Maëla, la maison d'Éléonore, le café-librairie et le bord de mer" loading="lazy" style="display:block;width:100%;height:auto">
-      <div style="padding:22px 26px 26px"><div class="eyebrow">Le Quartier de la Baie</div><h2 class="serif" style="margin:4px 0 8px">Un samedi à construire</h2>
+      <div style="padding:22px 26px 26px"><div class="eyebrow">Le Quartier de la Baie</div><h2 class="serif" style="margin:4px 0 8px">Un week-end à construire</h2>
         <p>Tu marches dans le quartier, tu choisis où entrer, à qui parler, quoi porter et quoi lâcher. Tes choix ferment des portes et en ouvrent d'autres.</p></div>
     </section>
     <section class="card" aria-label="Les personnages"><div class="eyebrow">Sept personnages, de 9 à 68 ans</div>
@@ -228,7 +228,7 @@ function renderAccueil(){
       <h2 class="serif" style="margin:4px 0 6px">Une force, et son Ombre</h2>
       <p class="muted">Le Lion, l'Abeille, la Tortue, le Renard… Chaque animal a sa Lumière et son Ombre. L'Ombre n'est pas une faute : c'est une réaction automatique qui protège quelque chose.</p>
       <div class="acc-cartes">${cartes}</div></section>
-    <section class="card acc-mondes" aria-label="Quatre mondes"><div class="eyebrow">Quatre mondes de ta vie, toujours visibles</div>
+    <section class="card acc-mondes" aria-label="Quatre secteurs"><div class="eyebrow">Quatre secteurs de ta vie, toujours visibles</div>
       <div class="acc-m4"><div><strong>Moi</strong><br><span class="tiny">ce que tu veux</span></div><div><strong>Relations &amp; Famille</strong><br><span class="tiny">qui t'entoure</span></div><div><strong>Activités &amp; Projet</strong><br><span class="tiny">ce que tu construis</span></div><div><strong>Corps &amp; Équilibre</strong><br><span class="tiny">ce que ton corps dit</span></div></div></section>
     <section id="acc_table" class="card acc-choix" aria-label="Jouer à plusieurs"><div class="eyebrow">Jouer ensemble</div>
       <h2 class="serif" style="margin:4px 0 6px">Une table, un code, des amis</h2>
@@ -237,7 +237,7 @@ function renderAccueil(){
       <div class="acc-rejoindre"><label class="tiny" for="acc_code">Tu as un code ? Rejoins une table</label>
         <div class="row" style="gap:8px"><input id="acc_code" class="salon-input salon-code-in" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="CODE" value="${escapeHtml(q)}" onkeydown="if(event.key==='Enter')salonOuvrir(this.value,false)"><button class="ghost" onclick="salonOuvrir(document.getElementById('acc_code').value,false)">Rejoindre</button></div></div></section>
     ${typeof compteCarte === "function" ? compteCarte() : ""}
-<section class="card" aria-label="Autres façons de jouer"><div class="eyebrow">Autre façon de jouer</div><p class="muted">Le parcours libre : ta propre situation, les 30 archétypes et le plateau des quatre Mondes.</p>
+<section class="card" aria-label="Autres façons de jouer"><div class="eyebrow">Autre façon de jouer</div><p class="muted">Le parcours libre : ta propre situation, les 30 archétypes et le plateau des quatre secteurs.</p>
       <div class="row"><button class="ghost sm" onclick="startNew()">Parcours libre</button>${plateauEnCours ? `<button class="ghost sm" onclick="resumeGame()">Reprendre « ${escapeHtml(state.player.nom)} »</button>` : ""}<button class="ghost sm" onclick="goTo('tutorial')">Règles du parcours libre</button>${enCours ? `<button class="ghost sm" onclick="hNew('maela_1')">Recommencer Maëla</button>` : ""}</div></section>`;
 }
 if(typeof H_RENDER !== "undefined"){
