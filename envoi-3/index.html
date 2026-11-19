@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2A1810">
+<meta name="description" content="ANIMAE — Un jeu de vie narratif. Choisis une situation, traverse quatre Mondes, laisse des Traces.">
+<title>ANIMAE — Le jeu qui met la vie en mouvement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=Shippori+Mincho:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='%232A1810' stroke-width='6' stroke-linecap='round' stroke-dasharray='230 50' transform='rotate(-30 50 50)'/%3E%3C/svg%3E">
+<style>
+:root{
+  /* ANIMAE — palette "Souffle d'îles" */
+  --ivoire:#F7F0E3;
+  --ivoire-2:#EFE4CE;
+  --ivoire-3:#E8D9BC;
+  --papier:#FDFAF3;
+  --papier-2:#FBF5E8;
+  --espresso:#2A1810;
+  --espresso-2:#44322A;
+  --encre:#1A110A;
+  --gris-ancien:#8A7B6B;
+  --gris-clair:#B5A994;
+  --or-terre:#C9A567;
+  --or-terre-2:#B38F4C;
+  --or-clair:#E0C48A;
+  --sauge:#5C6E54;
+  --sauge-clair:#8A9E80;
+  --terracotta:#B85D3D;
+  --terracotta-2:#9A4A2E;
+  --terracotta-clair:#D4826A;
+  --indigo-nuit:#1A2338;
+  --indigo:#2D3B5E;
+  --indigo-clair:#5A6B8E;
+  --rose-ancien:#C8A09A;
+  --vert-profond:#3D4A3A;
+
+  /* Couleurs par Monde */
+  --m-moi:#1A2338;        /* indigo nuit — intériorité */
+  --m-moi-clair:#5A6B8E;
+  --m-relations:#B85D3D;  /* terracotta — chaleur humaine */
+  --m-relations-clair:#D4826A;
+  --m-activites:#C9A567;  /* or terre — manifestation */
+  --m-activites-clair:#E0C48A;
+  --m-corps:#5C6E54;      /* sauge — vital */
+  --m-corps-clair:#8A9E80;
+
+  --radius:4px;
+  --radius-md:10px;
+  --radius-lg:18px;
+  --shadow-sm:0 1px 2px rgba(42,24,16,.06),0 1px 3px rgba(42,24,16,.08);
+  --shadow:0 4px 14px rgba(42,24,16,.08),0 1px 3px rgba(42,24,16,.1);
+  --shadow-lg:0 20px 50px rgba(42,24,16,.12),0 2px 8px rgba(42,24,16,.1);
+  --border:1px solid rgba(42,24,16,.12);
+  --border-strong:1px solid rgba(42,24,16,.3);
+  --border-or:1px solid rgba(201,165,103,.4);
+}
+
+/* ========== RESET & BASE ========== */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%}
+body{
+  background:var(--ivoire);
+  color:var(--espresso-2);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:16px;line-height:1.6;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  background-image:
+    radial-gradient(ellipse 800px 400px at 20% 0%,rgba(201,165,103,.07),transparent),
+    radial-gradient(ellipse 600px 500px at 90% 50%,rgba(92,110,84,.05),transparent),
+    radial-gradient(ellipse 500px 300px at 10% 100%,rgba(184,93,61,.04),transparent),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 .165  0 0 0 0 .094  0 0 0 0 .063  0 0 0 .025 0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+  background-attachment:fixed;
+}
+
+/* Typographie éditoriale */
+.serif{font-family:'Cormorant Garamond','Shippori Mincho',Georgia,serif;font-weight:500;letter-spacing:.005em}
+.mincho{font-family:'Shippori Mincho','Cormorant Garamond',serif;font-weight:400}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;line-height:1.15;color:var(--espresso);margin:0 0 .5em;letter-spacing:.002em}
+h1{font-size:clamp(2.4rem,7vw,4.2rem);font-weight:500;line-height:1.05}
+h2{font-size:clamp(1.8rem,4.5vw,2.8rem);font-weight:500}
+h3{font-size:1.4rem;font-weight:600;color:var(--espresso)}
+h4{font-size:1.1rem;font-weight:600;color:var(--espresso-2);text-transform:uppercase;letter-spacing:.14em;font-family:'Inter',sans-serif}
+p{margin:0 0 1em}
+em,.italic{font-style:italic;font-family:'Cormorant Garamond',serif;font-size:1.08em}
+strong{color:var(--espresso);font-weight:600}
+a{color:var(--terracotta-2);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.muted{color:var(--gris-ancien)}
+.tiny{font-size:.82rem;color:var(--gris-ancien);letter-spacing:.01em}
+.eyebrow{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--or-terre-2);font-weight:600;font-family:'Inter',sans-serif}
+
+/* ========== LAYOUT ========== */
+#app{max-width:880px;margin:0 auto;padding:20px 20px 140px;position:relative}
+@media(min-width:900px){#app{padding:32px 32px 140px}}
+
+.container{max-width:720px;margin:0 auto}
+.center{text-align:center}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.row.between{justify-content:space-between}
+.row.center{justify-content:center}
+.grid{display:grid;gap:16px}
+.grid.c2{grid-template-columns:repeat(2,1fr)}
+.grid.c3{grid-template-columns:repeat(3,1fr)}
+.grid.c4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:700px){.grid.c2,.grid.c3,.grid.c4{grid-template-columns:1fr}}
+
+/* ========== HERO / SIGNATURE ========== */
+.hero{
+  position:relative;padding:48px 32px 40px;margin:16px 0 24px;
+  background:var(--papier);
+  border-radius:var(--radius-lg);
+  border:var(--border);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  text-align:center;
+}
+.hero:before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 15% 20%,rgba(201,165,103,.08),transparent 40%),
+    radial-gradient(circle at 85% 80%,rgba(184,93,61,.06),transparent 40%);
+  pointer-events:none;
+}
+.hero-mark{display:inline-block;margin-bottom:18px;animation:breath 6s ease-in-out infinite}
+.hero h1{position:relative;margin:0 0 8px}
+.hero .tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(1.1rem,2.6vw,1.5rem);color:var(--or-terre-2);margin:8px 0 0}
+.hero .motto{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--espresso-2);max-width:460px;margin:24px auto 28px;font-size:1.15rem;line-height:1.5}
+.hero .motto:before{content:"« ";color:var(--or-terre);font-style:normal}
+.hero .motto:after{content:" »";color:var(--or-terre);font-style:normal}
+
+@keyframes breath{0%,100%{transform:scale(1);opacity:.95}50%{transform:scale(1.04);opacity:1}}
+
+/* ========== CARDS ========== */
+.card{
+  position:relative;
+  background:var(--papier);
+  border:var(--border);
+  border-radius:var(--radius-lg);
+  padding:28px;
+  margin:0 0 18px;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .3s ease,transform .3s ease;
+}
+.card.lift{box-shadow:var(--shadow)}
+.card.lift:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.card.sombre{background:var(--encre);color:var(--ivoire);border-color:rgba(255,255,255,.08)}
+.card.sombre h1,.card.sombre h2,.card.sombre h3,.card.sombre strong{color:var(--ivoire)}
+.card.sombre .muted{color:var(--gris-clair)}
+.card.sauge{background:linear-gradient(180deg,rgba(92,110,84,.06),rgba(92,110,84,.02));border-left:3px solid var(--sauge)}
+.card.or{background:linear-gradient(180deg,rgba(201,165,103,.08),rgba(201,165,103,.02));border-left:3px solid var(--or-terre)}
+.card.terre{background:linear-gradient(180deg,rgba(184,93,61,.06),rgba(184,93,61,.02));border-left:3px solid var(--terracotta)}
+.card.indigo{background:linear-gradient(180deg,rgba(26,35,56,.06),rgba(26,35,56,.02));border-left:3px solid var(--indigo-nuit)}
+
+.eyebrow-line{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.eyebrow-line .line{flex:1;height:1px;background:rgba(201,165,103,.25)}
+.eyebrow-line span{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--or-terre-2);font-weight:600}
+
+/* ========== BUTTONS ========== */
+.btn,button{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Inter',sans-serif;font-size:.95rem;font-weight:500;
+  padding:13px 24px;border-radius:var(--radius-md);cursor:pointer;
+  transition:all .25s cubic-bezier(.2,.9,.3,1);border:1.5px solid transparent;
+  background:var(--espresso);color:var(--ivoire);
+  letter-spacing:.015em;line-height:1.2;text-align:center;text-decoration:none;
+  box-shadow:0 2px 0 rgba(42,24,16,.15),0 1px 3px rgba(42,24,16,.1);
+}
+.btn:hover,button:hover{transform:translateY(-2px);box-shadow:0 4px 0 rgba(42,24,16,.12),0 6px 16px rgba(42,24,16,.15);filter:brightness(1.08)}
+.btn:active,button:active{transform:translateY(0);box-shadow:0 1px 0 rgba(42,24,16,.15)}
+.btn.ghost,button.ghost{background:transparent;color:var(--espresso);border-color:var(--espresso);box-shadow:none}
+.btn.ghost:hover,button.ghost:hover{background:rgba(42,24,16,.05);box-shadow:0 2px 8px rgba(42,24,16,.08)}
+.btn.or,button.or{background:linear-gradient(180deg,var(--or-terre),var(--or-terre-2));color:var(--espresso);box-shadow:0 2px 0 rgba(179,143,76,.3),0 1px 3px rgba(42,24,16,.1)}
+.btn.terre,button.terre{background:linear-gradient(180deg,var(--terracotta),var(--terracotta-2));color:var(--ivoire)}
+.btn.sauge,button.sauge{background:linear-gradient(180deg,var(--sauge-clair),var(--sauge));color:var(--ivoire)}
+.btn.indigo,button.indigo{background:linear-gradient(180deg,var(--indigo),var(--indigo-nuit));color:var(--ivoire)}
+.btn.sm,button.sm{padding:8px 16px;font-size:.85rem}
+.btn.lg,button.lg{padding:16px 32px;font-size:1.05rem;border-radius:var(--radius-lg)}
+.btn.block,button.block{display:flex;width:100%}
+.btn:disabled,button:disabled{opacity:.4;cursor:not-allowed;transform:none!important;filter:none!important;box-shadow:none!important}
+
+/* ========== FORMS ========== */
+.field{margin-bottom:20px}
+label{display:block;font-weight:500;margin-bottom:8px;color:var(--espresso);font-size:.92rem;letter-spacing:.005em}
+label .hint{display:block;font-weight:400;font-size:.82rem;color:var(--gris-ancien);margin-top:2px;font-style:italic;font-family:'Cormorant Garamond',serif}
+input[type="text"],textarea,select{
+  width:100%;font-family:'Inter',sans-serif;font-size:1rem;
+  background:var(--papier);color:var(--espresso);
+  border:1.5px solid rgba(42,24,16,.15);
+  border-radius:var(--radius-md);padding:12px 16px;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+  line-height:1.5;
+}
+textarea{min-height:92px;resize:vertical;font-family:'Cormorant Garamond',serif;font-size:1.08rem;line-height:1.55}
+input:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--or-terre);background:#fff;
+  box-shadow:0 0 0 4px rgba(201,165,103,.15);
+}
+::placeholder{color:var(--gris-clair);font-style:italic}
+
+/* ========== BADGES / PILLS ========== */
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(201,165,103,.12);
+  border:1px solid rgba(201,165,103,.35);
+  padding:4px 11px;border-radius:999px;font-size:.76rem;color:var(--or-terre-2);
+  font-weight:500;letter-spacing:.02em;
+}
+.pill.sauge{background:rgba(92,110,84,.1);border-color:rgba(92,110,84,.3);color:var(--sauge)}
+.pill.terre{background:rgba(184,93,61,.1);border-color:rgba(184,93,61,.3);color:var(--terracotta-2)}
+.pill.indigo{background:rgba(26,35,56,.08);border-color:rgba(26,35,56,.25);color:var(--indigo-nuit)}
+.pill.ombre{background:rgba(42,24,16,.08);border-color:rgba(42,24,16,.25);color:var(--espresso)}
+
+.badge-monde{padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px}
+.badge-moi{background:rgba(26,35,56,.1);color:var(--m-moi);border:1px solid rgba(26,35,56,.25)}
+.badge-relations{background:rgba(184,93,61,.1);color:var(--m-relations);border:1px solid rgba(184,93,61,.3)}
+.badge-activites{background:rgba(201,165,103,.12);color:var(--or-terre-2);border:1px solid rgba(201,165,103,.35)}
+.badge-corps{background:rgba(92,110,84,.1);color:var(--m-corps);border:1px solid rgba(92,110,84,.3)}
+
+/* ========== HUD ========== */
+.hud{
+  position:sticky;top:0;z-index:40;margin:-20px -20px 20px;
+  background:rgba(247,240,227,.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:var(--border);
+  padding:10px 20px;
+  display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:.82rem;color:var(--espresso-2);
+}
+@media(min-width:900px){.hud{margin:-32px -32px 24px;padding:12px 32px}}
+.hud .stat{display:flex;align-items:center;gap:6px}
+.hud .stat strong{color:var(--espresso);font-weight:600}
+.hud .sep{color:var(--gris-clair);opacity:.5}
+.tension-dots{display:inline-flex;gap:3px;margin-left:4px}
+.tension-dots i{width:9px;height:9px;border-radius:50%;background:rgba(42,24,16,.08);display:block;transition:background .3s}
+.tension-dots i.on{background:var(--terracotta)}
+.tension-dots i.on.max{background:var(--terracotta-2);box-shadow:0 0 8px rgba(184,93,61,.5)}
+
+/* ========== SOPHIA & HONÕHA ========== */
+.sophia{
+  position:relative;background:linear-gradient(180deg,rgba(92,110,84,.07),rgba(92,110,84,.03));
+  border-left:3px solid var(--sauge);
+  border-radius:var(--radius-md);
+  padding:16px 18px 16px 48px;margin:16px 0;
+  font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--espresso-2);font-size:1.1rem;line-height:1.5;
+}
+.sophia:before{
+  content:"";position:absolute;top:18px;left:16px;width:20px;height:20px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235C6E54' stroke-width='1.5'><circle cx='10' cy='10' r='8'/><circle cx='10' cy='10' r='3' fill='%235C6E54'/></svg>");
+  background-size:contain;
+}
+.sophia .who{display:block;font-style:normal;font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--sauge);font-weight:600;font-family:'Inter',sans-serif;margin-bottom:6px}
+.honoha{
+  position:relative;background:linear-gradient(180deg,rgba(26,35,56,.06),rgba(26,35,56,.02));
+  border-left:3px solid var(--indigo-nuit);
+  border-radius:var(--radius-md);
+  padding:14px 18px;margin:16px 0;
+  font-family:'Cormorant Garamond',serif;color:var(--indigo-nuit);font-size:1.15rem;letter-spacing:.005em;
+}
+.honoha .who{display:block;font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--indigo);font-weight:600;font-family:'Inter',sans-serif;margin-bottom:4px}
+
+/* ========== VOIES (choix) ========== */
+.voies{display:grid;gap:10px;margin-top:14px}
+.voie{
+  all:unset;cursor:pointer;display:block;
+  background:var(--papier);border:1.5px solid rgba(42,24,16,.12);
+  border-radius:var(--radius-md);padding:16px 18px;
+  transition:all .25s ease;color:var(--espresso-2);
+}
+.voie:hover{border-color:var(--or-terre);background:var(--papier-2);transform:translateX(4px);box-shadow:0 2px 12px rgba(201,165,103,.15)}
+.voie.selected{border-color:var(--or-terre-2);background:linear-gradient(180deg,rgba(201,165,103,.12),rgba(201,165,103,.04));box-shadow:0 2px 12px rgba(201,165,103,.2)}
+.voie .vname{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.3rem;color:var(--espresso);margin-bottom:4px;letter-spacing:.005em}
+.voie .vq{color:var(--espresso-2);font-size:.98rem;line-height:1.5}
+.voie .vef{font-size:.82rem;color:var(--sauge);margin-top:6px;font-style:italic;font-family:'Cormorant Garamond',serif}
+.voie.je-passe{border-style:dashed}
+.voie.je-passe .vname{color:var(--gris-ancien)}
+
+/* ========== TRACK / PLATEAU ========== */
+.plateau-hero{
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;max-width:420px;margin-left:auto;margin-right:auto;
+}
+.monde-pastille{
+  position:relative;aspect-ratio:1;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  border:2px solid var(--espresso);background:var(--papier);
+  transition:all .3s ease;cursor:default;
+}
+.monde-pastille.active{box-shadow:0 0 0 4px rgba(201,165,103,.3)}
+.monde-pastille.trace:after{content:"❖";position:absolute;top:8px;right:14px;color:var(--or-terre);font-size:1.2rem}
+.monde-pastille .m-nom{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--espresso);text-align:center;padding:0 10px}
+.monde-pastille .m-sub{font-size:.65rem;color:var(--gris-ancien);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.monde-pastille.moi{border-color:var(--m-moi)}
+.monde-pastille.relations{border-color:var(--m-relations)}
+.monde-pastille.activites{border-color:var(--or-terre-2)}
+.monde-pastille.corps{border-color:var(--m-corps)}
+
+.track{
+  display:flex;gap:6px;padding:16px;margin:16px 0;
+  background:var(--papier-2);border-radius:var(--radius-lg);border:var(--border);
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--or-terre) transparent;
+}
+.track::-webkit-scrollbar{height:6px}
+.track::-webkit-scrollbar-thumb{background:var(--or-terre);border-radius:3px}
+.track-case{
+  min-width:68px;flex:0 0 auto;padding:10px 6px;text-align:center;
+  background:var(--papier);border:1.5px solid rgba(42,24,16,.1);border-radius:var(--radius-md);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-size:.68rem;color:var(--espresso-2);line-height:1.1;
+  transition:all .35s cubic-bezier(.2,.9,.3,1);
+}
+.track-case .icon{font-size:1.4rem;line-height:1;color:var(--espresso)}
+.track-case.seuil{background:linear-gradient(180deg,var(--or-clair),var(--or-terre));border-color:var(--or-terre-2)}
+.track-case.seuil .icon{color:var(--espresso)}
+.track-case.current{background:var(--espresso);color:var(--papier);border-color:var(--espresso);transform:scale(1.15);box-shadow:0 6px 16px rgba(42,24,16,.3)}
+.track-case.current .icon{color:var(--or-clair)}
+.track-case.visited{opacity:.45}
+
+/* ========== SCÈNE IMMERSIVE ========== */
+.scene{position:relative;border-radius:var(--radius-lg);overflow:hidden;border:var(--border);box-shadow:var(--shadow);margin:0 0 16px;background:var(--ivoire-2)}
+.scene svg{display:block;width:100%;height:auto}
+.scene-title{position:absolute;top:12px;left:14px;background:rgba(253,250,243,.9);border-radius:var(--radius-md);padding:6px 14px 8px;font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:600;color:var(--espresso);line-height:1.1;box-shadow:var(--shadow-sm)}
+.scene-title span{display:block;font-family:'Inter',sans-serif;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--or-terre-2);font-weight:600}
+#avatar{transition:transform .42s cubic-bezier(.4,0,.2,1)}
+.av-bob{animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.dice-float{position:absolute;top:50%;left:50%;margin:-36px 0 0 -36px}
+.dice-float[hidden]{display:none}
+.ici{display:flex;align-items:center;gap:10px;font-family:'Cormorant Garamond',serif;font-size:1.25rem;color:var(--espresso);margin-bottom:12px}
+.ici b{font-family:'Inter',sans-serif;font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--or-terre-2)}
+details.legende{font-size:.85rem;color:var(--gris-ancien);margin-top:14px}
+details.legende summary{cursor:pointer;color:var(--espresso-2)}
+details.legende span{display:inline-block;margin:6px 14px 0 0}
+@media (prefers-reduced-motion:reduce){#avatar{transition:none}.av-bob,.hero-mark{animation:none}}
+
+/* ========== AVENTURE : jauges des 4 Mondes ========== */
+.hj{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 14px;position:sticky;top:0;z-index:30;background:rgba(247,240,227,.94);backdrop-filter:blur(10px);padding:10px 0}
+.hj-item{position:relative;background:var(--papier);border:var(--border);border-radius:var(--radius-md);padding:7px 9px;transition:box-shadow .4s}
+.hj-item.up{box-shadow:0 0 0 2px var(--sauge-clair)}.hj-item.down{box-shadow:0 0 0 2px var(--terracotta-clair)}
+.hj-top{display:flex;justify-content:space-between;align-items:baseline;gap:4px}
+.hj-top b{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--espresso)}
+.hj-top span{font-size:.52rem;letter-spacing:.14em;color:var(--gris-ancien)}
+.hj-bar{display:flex;gap:3px;margin-top:5px}.hj-bar i{flex:1;height:7px;border-radius:3px;background:rgba(42,24,16,.1);display:block}
+.hj-d{position:absolute;top:-9px;right:-5px;background:var(--espresso);color:var(--ivoire);font-size:.72rem;font-weight:600;border-radius:999px;padding:1px 7px}
+.hj-item.down .hj-d{background:var(--terracotta-2)}.hj-item.up .hj-d{background:var(--sauge)}
+@media(max-width:520px){.hj-top span{display:none}.hj-top b{font-size:.92rem}}
+.card ol li{margin-bottom:8px}
+
+.mw-pulse{animation:mwp 1.6s ease-in-out infinite}
+@keyframes mwp{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@media (prefers-reduced-motion:reduce){.mw-pulse{animation:none}}
+
+.scene img.decor{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.scene.nuit img.decor{filter:brightness(.42) saturate(.55)}
+.scene.nuit:after{content:"";position:absolute;inset:0;background:rgba(26,35,56,.38);pointer-events:none}
+.scene-carte{position:absolute;right:3%;bottom:5%;width:26%;border:5px solid var(--papier);border-radius:8px;box-shadow:0 10px 30px rgba(42,24,16,.45);transform:rotate(2.5deg)}
+@media(max-width:560px){.scene-carte{width:33%;border-width:3px}}
+.acc-hero{position:relative;border-radius:18px;overflow:hidden;min-height:540px;display:flex;align-items:flex-end;margin-bottom:18px;background:#2a1810}
+.acc-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 60%}
+.acc-hero-voile{position:absolute;inset:0;background:linear-gradient(180deg,rgba(42,24,16,.1) 0%,rgba(42,24,16,.55) 38%,rgba(42,24,16,.92) 100%)}
+.acc-hero-txt{position:relative;padding:32px 26px 30px;color:#fff8ec;width:100%}
+.acc-clair{color:#f1d9a6!important}
+.acc-titre{font-size:clamp(3.2rem,12vw,5.6rem);letter-spacing:.12em;margin:4px 0 2px;color:#fff8ec;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+.acc-tagline{font-family:'Cormorant Garamond',serif;font-size:1.5rem;margin:0 0 6px}
+.acc-motto{font-style:italic;opacity:.92;margin:0 0 20px;max-width:34ch}
+.acc-cta{display:flex;gap:12px;flex-wrap:wrap}
+.acc-ghost{background:rgba(255,248,236,.14);color:#fff8ec;border:1.5px solid rgba(255,248,236,.7);border-radius:999px;padding:14px 26px;font:inherit;font-weight:600;cursor:pointer;backdrop-filter:blur(4px)}
+.acc-ghost:hover,.acc-ghost:focus-visible{background:rgba(255,248,236,.28)}
+.acc-gestes{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}
+.ag-n{width:34px;height:34px;border-radius:50%;background:var(--espresso);color:var(--or-clair);display:flex;align-items:center;justify-content:center;font-weight:600;margin-bottom:6px}
+.acc-geste h3{margin:2px 0 6px;font-size:1.5rem}.acc-geste p{margin:0;font-size:.95rem;line-height:1.5}
+.acc-persos{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:14px;text-align:center}
+.acc-perso{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ap-nom{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.15rem}.ap-age{font-size:.78rem;color:var(--gris-ancien)}
+.acc-cartes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.acc-carte{width:min(30%,170px);min-width:120px;border-radius:10px;box-shadow:0 4px 16px rgba(42,24,16,.25);transform:rotate(-2deg)}
+.acc-carte:nth-child(2){transform:translateY(-8px) rotate(1deg)}.acc-carte:nth-child(3){transform:rotate(3deg)}
+.acc-m4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:10px}
+.acc-m4>div{padding:12px 14px;border-radius:12px;background:var(--papier);line-height:1.3}
+.salon-code{font-size:3.6rem;letter-spacing:.35em;margin:4px 0 6px;padding-left:.35em}
+.salon-mode{display:inline-block;font-size:.78rem;padding:4px 12px;border-radius:999px;background:var(--papier-2);color:var(--gris-ancien)}
+.salon-mode.ok{background:#dfeedd;color:#2f5a30}
+.salon-input{width:100%;padding:12px 14px;border:1px solid rgba(42,24,16,.25);border-radius:10px;font:inherit;background:#fff;color:var(--espresso);margin-top:6px}
+.salon-code-in{width:9ch;text-align:center;letter-spacing:.3em;text-transform:uppercase;font-weight:600}
+.salon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.salon-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;border:2px solid rgba(42,24,16,.12);border-radius:14px;background:var(--papier);cursor:pointer;font:inherit;color:var(--espresso);transition:transform .2s,box-shadow .2s,border-color .2s;animation:salonIn .35s ease}
+.salon-card:hover,.salon-card:focus-visible{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--or-terre)}
+.salon-card.mien{border-color:var(--or-terre-2);background:linear-gradient(180deg,var(--papier-2),var(--papier))}
+.sc-nom{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.3rem}
+.sc-age{font-size:.8rem;color:var(--gris-ancien)}
+.sc-tag{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--or-terre-2);font-weight:600}
+.sc-bientot{font-size:.7rem;color:var(--gris-ancien);font-style:italic}
+.salon-table{display:flex;flex-direction:column;gap:8px}
+.salon-joueur{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:12px;background:var(--papier)}
+.salon-joueur.moi{outline:2px solid var(--or-terre)}
+.sj-face{width:44px;height:44px;flex:none;display:flex;align-items:center;justify-content:center}
+.sj-vide{width:44px;height:44px;border-radius:50%;background:rgba(42,24,16,.08);display:flex;align-items:center;justify-content:center;color:var(--gris-ancien)}
+.sj-txt{flex:1;line-height:1.25}
+.sj-etat{font-size:.75rem;font-weight:600;color:var(--gris-ancien)}.sj-etat.ok{color:#2f5a30}
+.acc-faces{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:16px}
+.acc-face{opacity:.92}
+.acc-rejoindre{margin-top:18px;padding-top:14px;border-top:1px dashed rgba(42,24,16,.15)}
+@keyframes salonIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.salon-card{animation:none;transition:none}}
+.flipc{perspective:1000px;cursor:pointer;width:100%;aspect-ratio:450/630}
+.flipi{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+.flipc.f .flipi{transform:rotateY(180deg)}
+.flipf{position:absolute;inset:0;width:100%;height:100%;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 2px 10px rgba(42,24,16,.18)}
+.flipb{transform:rotateY(180deg)}
+@media (prefers-reduced-motion:reduce){.flipi{transition:none}}
+.arch-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.arch-bar span{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--or-terre-2);font-weight:600}
+.arch-bar button{padding:6px 12px;font-size:.8rem}
+
+.mw-tel{position:absolute;top:12px;right:12px;max-width:62%;background:rgba(253,250,243,.96);border-radius:14px;padding:10px 14px;font-size:.88rem;line-height:1.35;color:var(--espresso);box-shadow:0 8px 24px rgba(42,24,16,.35);border-left:4px solid var(--terracotta);animation:telIn .45s cubic-bezier(.2,.9,.3,1)}
+.mw-tel[hidden]{display:none}
+.mw-tel b{display:block;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--terracotta-2)}
+@keyframes telIn{0%{opacity:0;transform:translateY(-14px) rotate(-2deg)}60%{transform:translateY(2px) rotate(1deg)}100%{opacity:1;transform:none}}
+.narr p{opacity:0;animation:fadeIn .7s ease forwards}
+.narr p:nth-child(2){animation-delay:.5s}.narr p:nth-child(3){animation-delay:1s}.narr p:nth-child(4){animation-delay:1.5s}.narr p:nth-child(n+5){animation-delay:2s}
+.hj-item.down{animation:secousse .5s ease}
+@keyframes secousse{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+.hj-item.up{animation:eclat .7s ease}
+@keyframes eclat{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:35;background:radial-gradient(ellipse at center,transparent 45%,rgba(42,24,16,.55) 100%);opacity:0;transition:opacity 1.2s ease}
+body.fatigue:after{opacity:1;animation:pouls 1.6s ease-in-out infinite}
+@keyframes pouls{0%,100%{opacity:.75}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.narr p{opacity:1;animation:none}.hj-item.down,.hj-item.up,body.fatigue:after{animation:none}}
+
+/* ========== DICE ========== */
+.dice{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:72px;height:72px;margin:12px;
+  background:linear-gradient(135deg,var(--papier),var(--papier-2));
+  border:2.5px solid var(--espresso);
+  border-radius:var(--radius-md);
+  font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:600;color:var(--espresso);
+  box-shadow:0 6px 0 var(--espresso-2),0 8px 20px rgba(42,24,16,.2);
+}
+.dice.rolling{animation:diceRoll .6s cubic-bezier(.2,.9,.3,1)}
+@keyframes diceRoll{
+  0%{transform:rotate(0) scale(1)}
+  50%{transform:rotate(180deg) scale(1.15)}
+  100%{transform:rotate(360deg) scale(1)}
+}
+
+/* ========== ENSO / SCEAUX ========== */
+.enso{display:inline-block;width:80px;height:80px}
+.enso-moi circle,.enso-relations circle,.enso-activites circle,.enso-corps circle{fill:none;stroke-width:4;stroke-linecap:round;stroke-dasharray:230 50;transform-origin:center;transform:rotate(-30deg)}
+.enso-moi circle{stroke:var(--m-moi)}
+.enso-relations circle{stroke:var(--m-relations)}
+.enso-activites circle{stroke:var(--or-terre-2)}
+.enso-corps circle{stroke:var(--m-corps)}
+
+/* ========== PERSONNAGE CARDS ========== */
+.perso-card{
+  background:var(--papier);border:var(--border);border-radius:var(--radius-lg);
+  padding:20px;cursor:pointer;transition:all .3s ease;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:8px;
+}
+.perso-card:hover{border-color:var(--or-terre);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.perso-card.selected{border:2px solid var(--or-terre-2);background:var(--papier-2);box-shadow:0 8px 24px rgba(201,165,103,.2)}
+.perso-card .perso-age{font-size:.74rem;letter-spacing:.2em;color:var(--or-terre-2);font-weight:600;text-transform:uppercase}
+.perso-card .perso-nom{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;color:var(--espresso);line-height:1}
+.perso-card .perso-titre{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--espresso-2);font-size:1.02rem}
+.perso-card .perso-phrase{font-family:'Cormorant Garamond',serif;color:var(--or-terre-2);font-size:.98rem;line-height:1.4;margin-top:4px;padding:10px 0 2px;border-top:1px dashed rgba(201,165,103,.3)}
+.perso-card .perso-phrase:before{content:"« ";color:var(--or-terre);font-style:normal}
+.perso-card .perso-phrase:after{content:" »";color:var(--or-terre);font-style:normal}
+.perso-card .perso-fil{font-size:.78rem;color:var(--gris-ancien);font-style:italic;letter-spacing:.01em}
+
+/* ========== ARCHÉTYPES ========== */
+.arch-card{
+  background:var(--papier);border:var(--border);border-radius:var(--radius-lg);
+  padding:18px;cursor:pointer;transition:all .3s ease;position:relative;
+}
+.arch-card:hover{border-color:var(--or-terre);transform:translateY(-2px);box-shadow:var(--shadow)}
+.arch-card.assigned{border:2px solid var(--or-terre-2);background:linear-gradient(180deg,var(--papier-2),var(--papier))}
+.arch-card .slot-badge{position:absolute;top:12px;right:12px;background:var(--espresso);color:var(--or-clair);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1rem}
+.arch-card .a-nom{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:1.35rem;color:var(--espresso);margin-bottom:2px;letter-spacing:.005em}
+.arch-card .a-titre{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--or-terre-2);font-size:.95rem;margin-bottom:12px}
+.arch-card .a-lum,.arch-card .a-omb{font-size:.85rem;line-height:1.45;margin-top:8px}
+.arch-card .a-lum{color:var(--espresso-2)}
+.arch-card .a-omb{color:var(--gris-ancien)}
+.arch-card .a-lum b,.arch-card .a-omb b{display:block;font-size:.66rem;letter-spacing:.2em;margin-bottom:4px;font-weight:600;font-family:'Inter',sans-serif;color:var(--or-terre-2)}
+.arch-card .a-omb b{color:var(--gris-ancien)}
+.arch-card .slot-row{display:flex;gap:6px;margin-top:14px;padding-top:12px;border-top:1px dashed rgba(42,24,16,.1)}
+.arch-card .slot-row button{flex:1;padding:8px 10px;font-size:.78rem}
+
+/* ========== MODAL ========== */
+.overlay{
+  position:fixed;inset:0;background:rgba(42,24,16,.6);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;
+  animation:fadeIn .25s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal{
+  background:var(--papier);border-radius:var(--radius-lg);
+  padding:28px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;
+  animation:slideUp .35s cubic-bezier(.2,.9,.3,1);
+  box-shadow:0 30px 80px rgba(42,24,16,.3);
+  border:var(--border);
+}
+.modal h2{margin-top:0}
+
+/* ========== TOGGLE ========== */
+.toggle{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:.9rem;color:var(--espresso-2)}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.toggle .sw{width:42px;height:22px;background:rgba(42,24,16,.15);border-radius:11px;position:relative;transition:background .22s}
+.toggle .sw:after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:var(--ivoire);border-radius:50%;transition:left .22s;box-shadow:0 1px 3px rgba(42,24,16,.3)}
+.toggle input:checked + .sw{background:var(--sauge)}
+.toggle input:checked + .sw:after{left:22px}
+
+/* ========== JOURNAL ========== */
+.journal{max-height:420px;overflow-y:auto;background:var(--papier);padding:16px;border-radius:var(--radius-md);font-size:.9rem;border:var(--border)}
+.journal .entry{margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed rgba(201,165,103,.2)}
+.journal .entry:last-child{border-bottom:none}
+.journal .entry .meta{font-size:.72rem;color:var(--or-terre-2);text-transform:uppercase;letter-spacing:.14em;margin-bottom:4px;font-weight:600}
+.journal .entry .txt{color:var(--espresso-2);line-height:1.45}
+
+/* ========== AXES FINAL ========== */
+.axes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
+.axe{background:var(--papier-2);border-radius:var(--radius-md);padding:16px 12px;text-align:center;border:var(--border)}
+.axe .num{font-family:'Cormorant Garamond',serif;font-size:2.8rem;color:var(--espresso);line-height:1;font-weight:600}
+.axe .lbl{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--or-terre-2);margin-top:6px;font-weight:600}
+@media(max-width:600px){.axes{grid-template-columns:repeat(2,1fr)}}
+
+/* ========== FOOTER ========== */
+.footer-actions{
+  position:fixed;bottom:0;left:0;right:0;z-index:40;
+  background:rgba(247,240,227,.95);backdrop-filter:blur(12px);
+  border-top:var(--border);padding:12px 16px;
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+}
+.footer-actions button{padding:8px 14px;font-size:.82rem}
+
+/* ========== BLOCKQUOTES & EDITORIAL ========== */
+blockquote{
+  margin:20px 0;padding:18px 24px;
+  border-left:3px solid var(--or-terre);
+  background:linear-gradient(180deg,rgba(201,165,103,.06),rgba(201,165,103,.02));
+  font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--espresso);
+  font-size:1.18rem;line-height:1.5;
+  border-radius:0 var(--radius-md) var(--radius-md) 0;
+}
+blockquote.center{text-align:center;border-left:none;border-top:1px solid rgba(201,165,103,.3);border-bottom:1px solid rgba(201,165,103,.3);background:transparent;padding:20px}
+hr{border:none;height:1px;background:linear-gradient(90deg,transparent,rgba(201,165,103,.4),transparent);margin:28px 0}
+
+/* ========== UL / LI ========== */
+ul{padding-left:1.4em;margin:12px 0}
+li{margin-bottom:6px}
+li::marker{color:var(--or-terre)}
+
+/* ========== UTILITIES ========== */
+.fade-in{animation:fadeIn .4s ease both}
+.slide-up{animation:slideUp .45s cubic-bezier(.2,.9,.3,1) both}
+.spacer-sm{height:12px}
+.spacer{height:24px}
+
+@media(max-width:500px){
+  .card{padding:20px}
+  .hud{font-size:.75rem;gap:10px}
+  .btn,button{padding:11px 18px;font-size:.9rem}
+  .hero{padding:32px 20px 28px}
+}
+
+.couleur-bloc{margin-top:12px}.couleur-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:1px solid var(--line,#d9c9a8);background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;color:inherit}
+.chip.on{background:#2a1a10;color:#fff;border-color:#2a1a10}
+.couleur-liste{display:grid;gap:8px;margin-top:8px}.couleur-ligne{display:flex;flex-direction:column;gap:1px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="animae_data.js"></script>
+<script src="animae_arc.js"></script>
+<script src="animae_scene.js"></script>
+<script src="animae_histoire_maela.js"></script>
+<script src="animae_son.js"></script>
+<script src="animae_histoire.js"></script>
+<script src="animae_monde.js"></script>
+<script src="lib/supabase.js"></script>
+<script src="animae_salon.js"></script>
+<script>
+/* =========================================================================
+   ANIMAE® V2.1 — Prototype vertical
+   © Dina Bus 2026 · ADN fidèle au Règlement Maître V1.0 + Deck Personnages V0.2
+   Design signature "Souffle d'îles"
+   ========================================================================= */
+
+const D = window.ANIMAE_DATA;
+
+// ============================================================================
+// CONSTANTES — Mondes, plateau, chemins (Règlement V1.0 + Plateau V1.1)
+// ============================================================================
+const MONDES = {
+  MOI:       { nom:"MOI", couleur:"var(--m-moi)", classe:"moi", explore:"Identité, émotions, confiance, aspirations, positionnement." },
+  RELATIONS: { nom:"RELATIONS", couleur:"var(--m-relations)", classe:"relations", explore:"Couple, famille, parentalité, amitiés, appartenance, communication." },
+  ACTIVITES: { nom:"ACTIVITÉS", couleur:"var(--or-terre-2)", classe:"activites", explore:"Travail, études, entrepreneuriat, projets, finances, collectif." },
+  CORPS:     { nom:"CORPS", couleur:"var(--m-corps)", classe:"corps", explore:"Énergie, rythme, récupération, besoins, limites, équilibre de vie." }
+};
+const MONDE_ORDER = ["MOI","RELATIONS","ACTIVITES","CORPS"];
+const PLATEAU = {
+  MOI:       ["SEUIL","A1L","MYSTERE","CONTEXTE","BIFURCATION","A2O","RESSOURCE","DEFI","MYSTERE","MIROIR","PASSAGE","NEUTRE","NEUTRE"],
+  RELATIONS: ["SEUIL","A1O","MYSTERE","CONTEXTE","BIFURCATION","A2L","RESSOURCE","DEFI","MYSTERE","ALLIANCE","PASSAGE","NEUTRE","NEUTRE"],
+  ACTIVITES: ["SEUIL","A1L","MYSTERE","CONTEXTE","BIFURCATION","NEUTRE","RESSOURCE","DEFI","MYSTERE","ALLIANCE","PASSAGE","A3L","NEUTRE"],
+  CORPS:     ["SEUIL","A1O","MYSTERE","CONTEXTE","BIFURCATION","NEUTRE","RESSOURCE","DEFI","MYSTERE","MIROIR","PASSAGE","A3O","NEUTRE"]
+};
+const CHEMINS = {
+  passages:{ MOI:"ACTIVITES", RELATIONS:"MOI", ACTIVITES:"CORPS", CORPS:"RELATIONS" },
+  bifurc:  { MOI:"RELATIONS", RELATIONS:"CORPS", ACTIVITES:"MOI", CORPS:"ACTIVITES" },
+  sentiers:{ MOI:"CORPS", CORPS:"MOI", RELATIONS:"ACTIVITES", ACTIVITES:"RELATIONS" }
+};
+const CASE_ICONS = {
+  SEUIL:"❖", NEUTRE:"·", CONTEXTE:"❧", DEFI:"⛰", MYSTERE:"?", RESSOURCE:"✿",
+  MIROIR:"☽", ALLIANCE:"⚭", BIFURCATION:"⋔", PASSAGE:"⌾",
+  A1L:"★", A1O:"★", A2L:"✦", A2O:"✦", A3L:"✧", A3O:"✧"
+};
+const CASE_LABELS = {
+  SEUIL:"Seuil", NEUTRE:"Respiration", CONTEXTE:"Contexte", DEFI:"Défi", MYSTERE:"Mystère",
+  RESSOURCE:"Ressource", MIROIR:"Miroir", ALLIANCE:"Alliance", BIFURCATION:"Bifurcation",
+  PASSAGE:"Passage",
+  A1L:"A1·Lumière", A1O:"A1·Ombre", A2L:"A2·Lumière", A2O:"A2·Ombre",
+  A3L:"A3·Lumière", A3O:"A3·Ombre"
+};
+
+// ============================================================================
+// DECK PERSONNAGES — 7 héros transversaux (Registre Maître V0.2 © Dina Bus)
+// Module OPTIONNEL · Aucun bonus mécanique · Change uniquement le point de vue
+// ============================================================================
+const PERSONNAGES = [
+  { id:"milo", nom:"MILO", age:9, titre:"Le héros du regard neuf",
+    phrase:"Celui qui regarde ce que les adultes ne regardent plus.",
+    fil:"Découvrir ↔ comprendre",
+    question:"Qu'est-ce qu'on ne voit plus simplement parce qu'on a cessé de regarder ?",
+    porte:"Curiosité ; attention au détail ; questions directes ; émerveillement ; regard neuf.",
+    tension:"Peut manquer de mots pour ce qu'il perçoit ; dépend de décisions d'adultes ; conclusions trop vite ; peut déranger par ses questions.",
+    retour:"Qu'est-ce que Milo t'a permis de remarquer que ta place habituelle rendait moins visible ?",
+    usage:"Très puissant dans les expériences relationnelles et familiales.",
+    palette:"Moutarde / bleu gris / crème" },
+  { id:"inaya", nom:"INAYA", age:16, titre:"L'héroïne de la place juste",
+    phrase:"Celle qui découvre qu'appartenir ne signifie pas se conformer.",
+    fil:"Appartenir ↔ s'affirmer",
+    question:"Comment rester avec les autres sans devoir devenir comme eux ?",
+    porte:"Lucidité ; sensibilité au groupe ; capacité à questionner les normes ; expressivité ; contribution réelle.",
+    tension:"Peur du regard ; tentation de se conformer ou de se couper ; difficulté à nommer ses propres besoins ; test des limites.",
+    retour:"Dans quel espace cherches-tu encore à choisir entre appartenir et être pleinement toi ?",
+    usage:"Féconde dans les groupes, équipes, familles, situations de visibilité ou de changement imposé.",
+    palette:"Sauge / denim doux / crème" },
+  { id:"noe", nom:"NOÉ", age:24, titre:"Le héros des possibles",
+    phrase:"Celui qui découvre qu'une vie choisie demande aussi de renoncer à d'autres vies possibles.",
+    fil:"Choisir ↔ devenir",
+    question:"Parmi tout ce que je pourrais devenir, qu'est-ce que je choisis réellement de construire ?",
+    porte:"Ouverture ; mobilité ; curiosité ; capacité à commencer ; disponibilité au changement ; énergie de choix.",
+    tension:"Indécision ; peur de fermer des portes ; confusion entre liberté et report ; dispersion entre plusieurs futurs possibles.",
+    retour:"Quel possible gardes-tu ouvert au prix de ne pas construire pleinement celui que tu dis vouloir ?",
+    usage:"Transitions, orientations, débuts professionnels, changements de cap, décisions retardées.",
+    palette:"Sable / bleu gris / brun clair" },
+  { id:"hana", nom:"HANA", age:37, titre:"L'héroïne du désir retrouvé",
+    phrase:"Celle qui distingue progressivement ce qu'elle veut de ce qu'elle a appris à vouloir.",
+    fil:"Attentes ↔ désir propre",
+    question:"Parmi les choix que j'ai faits, lesquels sont encore vraiment les miens ?",
+    porte:"Adaptabilité ; ambition ; nuance ; analyse ; humour ; sensibilité ; capacité à circuler entre environnements.",
+    tension:"Suradaptation ; attentes intériorisées ; confusion choix/conformité ; réussite qui ne correspond plus au désir.",
+    retour:"Qu'est-ce qui, dans ta vie, est encore réellement à toi parce que tu le choisis aujourd'hui ?",
+    usage:"Suradaptation, mobilité, abondance de possibles, réussite ambivalente, redéfinition personnelle.",
+    palette:"Bleu encre / ivoire / vieux rose" },
+  { id:"maela", nom:"MAËLA", age:42, titre:"L'héroïne de la construction vivante",
+    phrase:"Celle qui ose construire quelque chose qui n'existait pas encore.",
+    fil:"Construire ↔ se redéfinir",
+    question:"Ce que je construis correspond-il toujours à celle que je suis devenue en le construisant ?",
+    porte:"Courage tranquille ; capacité à initier ; créativité incarnée ; persévérance ; ouvrir un passage ; maturité.",
+    tension:"Porter trop ; croire qu'elle doit tenir seule ; confondre engagement et surcharge ; continuer une construction qui ne lui correspond plus.",
+    retour:"Ce que tu construis correspond-il toujours à la personne que tu es devenue en le construisant ?",
+    usage:"Projets, prises de risque, passage à l'acte, leadership, surcharge, collaboration, redéfinition.",
+    palette:"Terracotta / kaki / crème / or discret" },
+  { id:"gabriel", nom:"GABRIEL", age:52, titre:"Le héros de la continuité choisie",
+    phrase:"Celui qui découvre que savoir tenir une vie ne signifie pas forcément devoir la conserver telle quelle.",
+    fil:"Continuer ↔ se réorienter",
+    question:"Qu'est-ce que je continue par choix, et qu'est-ce que je continue uniquement parce que j'ai toujours continué ?",
+    porte:"Fiabilité ; responsabilité ; endurance ; structure ; continuité ; capacité à stabiliser.",
+    tension:"Inertie ; sur-responsabilité ; difficulté à fermer ; poids du devoir ; maintien de systèmes devenus inadéquats.",
+    retour:"Que continues-tu réellement par choix, et que continues-tu seulement parce que tu sais très bien le faire ?",
+    usage:"Contextes professionnels, familiaux, institutionnels où la responsabilité et le devoir occupent beaucoup de place.",
+    palette:"Indigo / brun / gris chaud" },
+  { id:"eleonore", nom:"ÉLÉONORE", age:68, titre:"L'héroïne des possibles après l'expérience",
+    phrase:"Celle qui refuse que son passé soit plus grand que son avenir.",
+    fil:"Expérience ↔ nouveaux possibles",
+    question:"Maintenant que je sais tout ce que j'ai été, qu'est-ce que je n'ai pas encore été ?",
+    porte:"Expérience ; autonomie ; curiosité ; transmission ; discernement ; capacité à recommencer.",
+    tension:"Poids du passé ; regard des autres sur l'âge ; pertes accumulées ; risque d'être assignée au rôle de sage ou de mémoire.",
+    retour:"Qu'est-ce que ton expérience t'a appris sans t'enfermer ? Qu'est-ce que tu n'as pas encore essayé ?",
+    usage:"Questionner les représentations de l'âge, du savoir, du recommencement, de la transmission.",
+    palette:"Ivoire / prune / vert profond / touches d'or" }
+];
+
+// ============================================================================
+// SOPHIA — facilitatrice optionnelle (scripted, non-LLM)
+// Posture : constellations systémiques + coaching transformationnel + conseil
+// Jamais de jugement, jamais de diagnostic, respect absolu du droit de réserve
+// ============================================================================
+const SOPHIA = {
+  welcome:[
+    "Avant de commencer : je ne juge pas, je reflète. Tu décides toujours de ce que tu écris.",
+    "Prends le temps d'arriver. Ce que tu vas vivre ici t'appartient — personne ne te demande de montrer ce que tu ne veux pas montrer.",
+    "ANIMAE n'est pas un test. C'est une façon de regarder une situation sous plusieurs angles. Je serai là, en appui, si tu actives ma présence."
+  ],
+  mode_choisi:[
+    "Tu peux changer d'approche en cours de partie — rien n'est figé.",
+    "Le mode que tu choisis colore la traversée, pas sa valeur. L'essentiel reste ton regard."
+  ],
+  personnage_choisi:[
+    "Ce héros n'est pas toi. Il est une place depuis laquelle regarder. Reviens à toi quand tu veux, ou pas du tout.",
+    "Un personnage ne cache pas, il distancie. C'est parfois exactement ce qui permet d'avancer."
+  ],
+  archetypes_drawn:[
+    "Tes trois archétypes ne te définissent pas. Ils décrivent trois façons dont tu peux fonctionner dans cette situation précise.",
+    "A1 est ton spontané. A2 est mobilisable. A3 est moins familier — et c'est souvent là que se trouvent les surprises.",
+    "Un archétype a toujours une Lumière et une Ombre. Les deux font partie du vivant. Le jeu ne récompense pas la Lumière automatiquement."
+  ],
+  enter_centre:[
+    "Au Centre, tu peux respirer. Une seule action : te recentrer, recalibrer ton archétype actif, ou relancer le dé des Mondes.",
+    "Le Centre n'est pas un raccourci vers la fin. C'est un lieu où tu peux changer de regard avant de repartir."
+  ],
+  enter_monde:[
+    "Chaque Monde a sa propre lecture. La même situation vue depuis ici n'est pas la même situation vue ailleurs.",
+    "Tu entres. Prends le temps de voir ce qui se dessine avant d'agir."
+  ],
+  contexte_tire:[
+    "Un Contexte décrit ce qui se passe — pas ce que tu es. Regarde ce qui change dans ta situation à cause de ce qui vient d'arriver.",
+    "Les quatre voies ne sont pas hiérarchisées. Il n'y a pas de bonne réponse ici — il y a une réponse juste pour toi, maintenant."
+  ],
+  defi_tire:[
+    "Un Défi te demande de mobiliser quelque chose. Tu n'es pas obligé·e de tout réussir — seulement de produire une réponse à la hauteur du critère.",
+    "Tu peux laisser un Défi « en cours » : il reste avec toi, sans point ni pénalité."
+  ],
+  archetype_lum:[
+    "Une Lumière n'est pas un bonus automatique. C'est une force — et c'est à toi de juger si elle est réellement ajustée ici.",
+    "Qu'est-ce qui, dans cette force, est vraiment utile ici ? Et qu'est-ce qui, si tu la poussais trop loin, pourrait coûter ?"
+  ],
+  archetype_omb:[
+    "Une Ombre n'est pas une faute. C'est une réaction — souvent protectrice. Avant de la juger, demande-toi ce qu'elle cherche à préserver.",
+    "Une réaction automatique peut produire une prise de conscience. Même quand elle coûte."
+  ],
+  je_passe:[
+    "Tu as passé — c'est neutre. Aucune Tension, aucun recul. Tu n'as rien à justifier.",
+    "Passer est une forme de présence : tu as vu, tu as choisi de ne pas t'engager maintenant."
+  ],
+  joker_passe:[
+    "Tu as utilisé ton Joker. C'était le seul de la partie.",
+    "Un Joker bien placé vaut plus qu'un parcours forcé. Continue."
+  ],
+  tension_critical:[
+    "Tension 3. Le jeu te demande de réguler avant de repartir. Ce n'est pas un échec — c'est le signal que le système a besoin d'air.",
+    "La Saturation est un moment où le parcours te force à ralentir. Que peux-tu déposer, ajuster, demander ?"
+  ],
+  cercle_entered:[
+    "Tu tournes dans ce Monde. Quelque chose cherche à se répéter.",
+    "Le Cercle n'est pas un mur. C'est une invitation à changer quelque chose avant de reprendre."
+  ],
+  bifurcation:[
+    "Une Bifurcation n'est pas une fuite. C'est un choix de trajectoire — assumé.",
+    "Tu peux bifurquer ou rester. Les deux sont légitimes."
+  ],
+  passage:[
+    "Un Passage ouvre un autre Monde. Ce que tu portes avec toi te suit."
+  ],
+  trace_gained:[
+    "Tu as laissé une Trace. Elle est permanente — rien ne peut l'effacer.",
+    "La Trace n'est pas un trophée. C'est la preuve que quelque chose de significatif a eu lieu ici."
+  ],
+  ressource_gained:[
+    "Une Ressource nommée est une Ressource mobilisable. Tu peux l'utiliser plus tard quand ça coincera.",
+    "Chaque Ressource vaut autant que la précision avec laquelle tu l'as nommée."
+  ],
+  near_end:[
+    "Tu approches du Passage final. Reprends en silence ta Situation et ta Victoire de départ — elles n'ont peut-être pas changé, et ça aussi, c'est une information."
+  ],
+  aboutissement_atteint:[
+    "Tu as atteint un aboutissement. Clarifie-le pour toi avant de refermer : ce que tu as compris, et le prochain mouvement concret qui en découle."
+  ],
+  aboutissement_mouvement:[
+    "Tu sors avec un prochain mouvement clair, même si la situation n'est pas pleinement résolue. C'est souvent la forme la plus juste d'un aboutissement."
+  ],
+  aboutissement_ouvert:[
+    "Tu sors avec une question plus nette. Ce n'est pas un échec : une question bien formulée vaut parfois davantage qu'une réponse pressée."
+  ],
+  aboutissement_non_resolu:[
+    "Rien n'est forcé à se résoudre. Tu peux revenir au Centre, rejouer, ou simplement laisser infuser."
+  ]
+};
+
+const HONOHA = {
+  intro:["Le souffle entre en mouvement.","ANIMAE commence.","La vie s'ouvre."],
+  nouveau_monde: m => `Tu entres au Monde ${MONDES[m].nom}.`,
+  nouvelle_case: (c,m) => `${CASE_LABELS[c] || c} — Monde ${MONDES[m].nom}.`,
+  cercle:"Tu es entré·e dans le Cercle.",
+  trace: m => `Trace du Monde ${MONDES[m].nom} acquise.`,
+  passage_final:"Le Passage final s'ouvre.",
+  fin:"Fin du parcours."
+};
+
+// ============================================================================
+// STATE
+// ============================================================================
+let state = loadState() || newState();
+
+function newState(){
+  return {
+    phase:"intro",
+    mode:"soi", // "soi" (jouer en son nom) | "personnage" (héros transversal)
+    personnage:null, // id de personnage si mode=personnage
+    player:{ nom:"", situation:"", intention:"", victoire:"", intimite:"fiction" },
+    archetypes:[],
+    activeSlot:"A1",
+    position:{ monde:"CENTRE", caseIdx:0 },
+    sens:1,
+    compteurMonde:0,
+    cercleActif:false,
+    tension:0,
+    ressources:[],
+    traces:{ MOI:false, RELATIONS:false, ACTIVITES:false, CORPS:false },
+    contexteActif:null,
+    defiActif:null,
+    points:{ CONSCIENCE:0, ACTION:0, ALLIANCE:0, ADAPTATION:0 },
+    parcours:[],
+    rencontreDifferee:null,
+    sasEntree:{ regarder:"", ressentir:"", nommer:"" },
+    pools:{
+      contextes: shuffleArray([...Array(D.contextes.length).keys()].map(i=>i+1)),
+      defis: shuffleArray([...Array(D.defis.length).keys()].map(i=>i+1)),
+      contextesRencontres:[],
+      defisRencontres:[]
+    },
+    sophiaOn:true,
+    jokerUsed:false, // Joker JE PASSE : 1 seul par partie (règle Deck Personnages V0.2)
+    aboutissement:null,
+    created:Date.now(),
+    tour:0
+  };
+}
+
+function loadState(){
+  try{ const s = localStorage.getItem("animae_v21_state"); if(!s) return null; return JSON.parse(s); }catch(e){ return null; }
+}
+function saveState(){ try{ localStorage.setItem("animae_v21_state", JSON.stringify(state)); }catch(e){} }
+function resetState(){ try{ localStorage.removeItem("animae_v21_state"); }catch(e){} state = newState(); render(); }
+
+// ============================================================================
+// UTILS
+// ============================================================================
+function shuffleArray(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function journal(txt, type="event"){ state.parcours.push({ t:Date.now(), tour:state.tour, txt, type }); if(state.parcours.length>200) state.parcours.shift(); }
+function sophiaSay(trigger){ if(!state.sophiaOn) return ""; const pool = SOPHIA[trigger]; return pool ? pick(pool) : ""; }
+
+// ============================================================================
+// ENGINE
+// ============================================================================
+function rollDiceDepl(){ return pick([1,1,2,2,3,3]); }
+function rollDiceMondes(){ return pick(["MOI","RELATIONS","ACTIVITES","CORPS","CHOIX","MYSTERE"]); }
+function getArchBySlot(slot){ const a = state.archetypes.find(x=>x.slot===slot); return a ? a.arch : null; }
+function getActiveArch(){ return getArchBySlot(state.activeSlot); }
+function getPersonnage(){ return state.personnage ? PERSONNAGES.find(p=>p.id===state.personnage) : null; }
+
+function enterMonde(m){
+  state.position = { monde:m, caseIdx:0 };
+  state.compteurMonde = 0;
+  state.cercleActif = false;
+  state.caseResolue = false; state.rencontreDifferee = null;
+  journal(`Entrée au Monde ${MONDES[m].nom} — Seuil.`,"monde");
+}
+function advance(steps){
+  const pl = PLATEAU[state.position.monde]; let idx = state.position.caseIdx; const total = pl.length;
+  for(let i=0;i<steps;i++){
+    idx = (idx + 1) % total;
+    if(idx === 0){ state.compteurMonde++; if(state.compteurMonde >= 2){ state.cercleActif=true; state.position.caseIdx=0; journal(HONOHA.cercle,"cercle"); return "cercle"; } }
+  }
+  state.position.caseIdx = idx;
+  return pl[idx];
+}
+function gainResource(libelle, source){
+  if(state.ressources.length >= 3) return false;
+  state.ressources.push({ libelle, source: source||"" });
+  journal(`+1 Ressource : « ${libelle} ».`,"ressource");
+  return true;
+}
+function spendResource(idx){
+  if(idx<0 || idx>=state.ressources.length) return null;
+  const r = state.ressources.splice(idx,1)[0];
+  journal(`Ressource dépensée : « ${r.libelle} ».`,"ressource");
+  return r;
+}
+function tensionUp(n=1){ const old=state.tension; state.tension=Math.min(3,state.tension+n); if(state.tension!==old) journal(`Tension ${old} → ${state.tension}.`,"tension"); }
+function tensionDown(n=1){ const old=state.tension; state.tension=Math.max(0,state.tension-n); if(state.tension!==old) journal(`Tension ${old} → ${state.tension}.`,"tension"); }
+function addPoint(voie){ voie=voie.toUpperCase(); if(state.points[voie]!==undefined){ state.points[voie]++; journal(`+1 ${voie}.`,"point"); } }
+function setTrace(m){ if(!state.traces[m]){ state.traces[m]=true; journal(`Trace ${MONDES[m].nom} acquise.`,"trace"); return true; } return false; }
+function tracesCount(){ return Object.values(state.traces).filter(Boolean).length; }
+function drawContexte(){ if(state.pools.contextes.length===0) state.pools.contextes=shuffleArray([...Array(D.contextes.length).keys()].map(i=>i+1)); const n=state.pools.contextes.shift(); state.pools.contextesRencontres.push(n); return D.contextes.find(c=>c.n===n); }
+function drawDefi(){ if(state.pools.defis.length===0) state.pools.defis=shuffleArray([...Array(D.defis.length).keys()].map(i=>i+1)); const n=state.pools.defis.shift(); state.pools.defisRencontres.push(n); return D.defis.find(d=>d.n===n); }
+
+// ============================================================================
+// RENDER ROOT
+// ============================================================================
+function render(){
+  saveState();
+  const app = document.getElementById("app");
+  const phase = state.phase;
+  const renderers = {
+    intro:renderIntro, tutorial:renderTutorial, mode:renderMode, personnage:renderPersonnage,
+    situation:renderSituation, archetypes:renderArchetypes, sas:renderSas,
+    centre:renderCentre, monde:renderMonde,
+    resolution_contexte:renderResolutionContexte, resolution_defi:renderResolutionDefi,
+    resolution_archetype:renderResolutionArchetype, resolution_mystere:renderResolutionMystere,
+    resolution_ressource:renderResolutionRessource, resolution_miroir:renderResolutionMiroir,
+    resolution_alliance:renderResolutionAlliance,
+    cercle_sortie:renderCercleSortie, bifurcation:renderBifurcation, passage:renderPassage,
+    saturation:renderSaturation, passage_final:renderPassageFinal,
+    aboutissement:renderAboutissement, fin:renderFin
+  };
+  const fn = renderers[phase] || H_RENDER[phase] || (()=>`<div class="card"><h3>Phase inconnue : ${phase}</h3><button onclick="goTo('intro')">Retour accueil</button></div>`);
+  const histoire = phase.startsWith("h_");
+  if(phase !== "h_play"){ if(typeof sonAmbiance === "function") sonAmbiance(false); if(document.body && document.body.classList) document.body.classList.remove("fatigue"); }
+  const hud = (phase !== "intro" && phase !== "tutorial" && !histoire) ? renderHud() : "";
+  const footer = (phase !== "intro" && !histoire) ? renderFooter() : "";
+  app.innerHTML = hud + `<div class="fade-in">` + fn() + `</div>` + footer;
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+function goTo(phase){ state.phase = phase; render(); }
+
+// ============================================================================
+// HUD + FOOTER + MODAL
+// ============================================================================
+function renderHud(){
+  const t = state.tension;
+  const tDots = [0,1,2].map(i=>`<i class="${i<t?('on'+(t===3?' max':'')):''}"></i>`).join("");
+  const pts = state.points;
+  const trs = Object.entries(state.traces).filter(([_,v])=>v).map(([k])=>k[0]).join("·") || "—";
+  const mondeLabel = state.position.monde === "CENTRE" ? "Centre" : MONDES[state.position.monde].nom;
+  return `<div class="hud">
+    <div class="stat"><strong>T${state.tour}</strong></div><span class="sep">·</span>
+    <div class="stat">Monde <strong>${mondeLabel}</strong></div><span class="sep">·</span>
+    <div class="stat">Tension <div class="tension-dots">${tDots}</div></div><span class="sep">·</span>
+    <div class="stat">Ress. <strong>${state.ressources.length}/3</strong></div><span class="sep">·</span>
+    <div class="stat">Traces <strong>${tracesCount()}/4</strong></div><span class="sep">·</span>
+    <div class="stat tiny">C${pts.CONSCIENCE}·A${pts.ACTION}·L${pts.ALLIANCE}·D${pts.ADAPTATION}</div>
+    <span class="sep">·</span><div class="stat tiny">Joker ${state.jokerUsed?'utilisé':'disponible'}</div>
+  </div>`;
+}
+function renderFooter(){
+  return `<div class="footer-actions">
+    <button class="ghost sm" onclick="toggleSophia()">${state.sophiaOn?"✦ Sophia":"○ Sophia"}</button>
+    <button class="ghost sm" onclick="showJournal()">Journal · ${state.parcours.length}</button>
+    <button class="ghost sm" onclick="confirmReset()">Nouvelle partie</button>
+  </div>`;
+}
+function toggleSophia(){ state.sophiaOn = !state.sophiaOn; render(); }
+function showJournal(){
+  const items = state.parcours.slice().reverse().map(e=>`<div class="entry"><div class="meta">Tour ${e.tour} · ${e.type}</div><div class="txt">${escapeHtml(e.txt)}</div></div>`).join("");
+  showModal(`<h2 class="serif">Journal de parcours</h2><div class="journal">${items||"<em class='muted'>Aucun événement encore.</em>"}</div><div class="spacer-sm"></div><button class="or" onclick="closeModal()">Fermer</button>`);
+}
+function confirmReset(){
+  showModal(`<h2 class="serif">Commencer une nouvelle partie ?</h2><p class="muted">Ta partie actuelle sera effacée.</p><div class="row"><button class="or" onclick="closeModal();resetState()">Oui, nouvelle partie</button><button class="ghost" onclick="closeModal()">Non</button></div>`);
+}
+function showModal(html){
+  const o = document.createElement("div"); o.className="overlay"; o.id="modal_overlay";
+  o.innerHTML = `<div class="modal">${html}</div>`;
+  o.onclick = (e)=>{ if(e.target.id==="modal_overlay") closeModal(); };
+  document.body.appendChild(o);
+}
+function closeModal(){ const o=document.getElementById("modal_overlay"); if(o) o.remove(); }
+
+// ============================================================================
+// SVG helpers — enso (sceau zen pour les Mondes)
+// ============================================================================
+function ensoSVG(classe, size=120){
+  return `<svg class="enso enso-${classe}" width="${size}" height="${size}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>`;
+}
+function ensoMark(){
+  return `<svg width="88" height="88" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="40" fill="none" stroke="var(--espresso)" stroke-width="5" stroke-linecap="round" stroke-dasharray="230 50" transform="rotate(-30 50 50)"/>
+    <circle cx="50" cy="50" r="16" fill="var(--or-terre)" opacity=".9"/>
+    <circle cx="50" cy="50" r="6" fill="var(--espresso)"/>
+  </svg>`;
+}
+
+// ============================================================================
+// PHASE: INTRO
+// ============================================================================
+function renderIntro(){ return renderAccueil(); }
+function startNew(){ state = newState(); state.phase = "mode"; journal("Nouvelle partie.","boot"); render(); }
+function resumeGame(){ if(state.phase === "intro") state.phase = "centre"; render(); }
+
+// ============================================================================
+// PHASE: TUTORIAL
+// ============================================================================
+function renderTutorial(){
+  return `
+  <div class="card or">
+    <div class="eyebrow">Comment ça fonctionne</div>
+    <h2 class="serif">Les fondations d'ANIMAE</h2>
+    <p><strong>Quatre Mondes.</strong> Moi · Relations · Activités · Corps. La même situation vue depuis chacun n'est pas la même situation.</p>
+    <p><strong>Trente Archétypes.</strong> Des animaux qui représentent des manières de fonctionner. Tu en tires trois : A1 (spontané), A2 (mobilisable), A3 (moins familier). Chacun a une Lumière et une Ombre — aucune n'est "bonne" ou "mauvaise".</p>
+    <p><strong>33 Contextes.</strong> Ce qui se passe. Un seul Contexte actif à la fois.</p>
+    <p><strong>30 Défis.</strong> Ce que la situation te demande. Un seul Défi actif. Il est "traversé" si tu produis une réponse qui correspond au critère.</p>
+    <p><strong>4 voies.</strong> Conscience · Action · Alliance · Adaptation. Tu choisis UNE voie par réponse : +1 point sur cette voie.</p>
+    <p><strong>Tension (0-3).</strong> Un signal de pression. À 3, le parcours te demande de réguler.</p>
+    <p><strong>Ressources.</strong> Ce que tu mobilises — une compétence, une personne, un temps. Maximum 3.</p>
+    <p><strong>Traces.</strong> Permanentes. Il te faut 2-3 Traces pour accéder au Passage final.</p>
+    <p><strong>Joker « Je passe ».</strong> Une seule fois par partie, tu peux passer une carte sans rien écrire et sans rien perdre. Choisis bien ton moment.</p>
+    <blockquote class="serif">« Avec [ARCHÉTYPE], dans [MONDE], je traverse [CONTEXTE], et cela me demande [DÉFI]. »</blockquote>
+    <div class="row">
+      <button class="or" onclick="goTo('mode')">J'ai compris — continuer</button>
+      <button class="ghost" onclick="goTo('intro')">← Retour</button>
+    </div>
+  </div>`;
+}
+
+// ============================================================================
+// PHASE: MODE — soi ou personnage
+// ============================================================================
+function renderMode(){
+  return `
+  <div class="card">
+    <div class="eyebrow-line"><span>Étape 1 sur 4</span><div class="line"></div></div>
+    <h2 class="serif">Comment tu entres ?</h2>
+    <p class="muted">Deux façons d'approcher ANIMAE. Tu peux changer plus tard.</p>
+    ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('welcome')}</div>` : ""}
+  </div>
+  <div class="grid c2">
+    <div class="perso-card ${state.mode==='soi'?'selected':''}" onclick="chooseMode('soi')">
+      <div class="perso-age">En ton nom</div>
+      <div class="perso-nom">Jouer soi-même</div>
+      <div class="perso-titre">Fiction ou situation personnelle, selon ton choix</div>
+      <div class="perso-phrase">Tu entres directement, avec ta situation, et tu décides à chaque étape si tu réponds avec fiction ou authenticité.</div>
+    </div>
+    <div class="perso-card ${state.mode==='personnage'?'selected':''}" onclick="chooseMode('personnage')">
+      <div class="perso-age">Avec un héros</div>
+      <div class="perso-nom">Incarner un personnage</div>
+      <div class="perso-titre">Milo · Inaya · Noé · Hana · Maëla · Gabriel · Éléonore</div>
+      <div class="perso-phrase">Sept héros transversaux pour regarder depuis une autre place. Aucun bonus, juste une distance qui peut aider à voir.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row between">
+      <button class="ghost" onclick="goTo('intro')">← Accueil</button>
+      <button class="or" ${state.mode?"":"disabled"} onclick="confirmMode()">Continuer →</button>
+    </div>
+  </div>`;
+}
+function chooseMode(m){ state.mode = m; if(m==='soi') state.personnage=null; render(); }
+function confirmMode(){
+  if(!state.mode) return;
+  journal(`Mode choisi : ${state.mode==='soi'?'jouer soi-même':'incarner un personnage'}.`,"mode");
+  if(state.sophiaOn) journal(sophiaSay('mode_choisi'),"sophia");
+  state.phase = state.mode === 'personnage' ? "personnage" : "situation";
+  render();
+}
+
+// ============================================================================
+// PHASE: PERSONNAGE — choix d'un héros transversal (Deck V0.2)
+// ============================================================================
+let _persoMode = "choix"; // "choix" | "tirage" | "pioche"
+let _persoTirage = null;
+
+function renderPersonnage(){
+  const cards = PERSONNAGES.map(p=>`
+    <div class="perso-card ${state.personnage===p.id?'selected':''}" onclick="selectPerso('${p.id}')">
+      <div class="perso-age">${p.age} ans</div>
+      <div class="perso-nom">${p.nom}</div>
+      <div class="perso-titre">${p.titre}</div>
+      <div class="perso-phrase">${p.phrase}</div>
+      <div class="perso-fil">Fil humain : ${p.fil}</div>
+    </div>`).join("");
+  return `
+  <div class="card">
+    <div class="eyebrow-line"><span>Étape 1·bis — Deck Personnages</span><div class="line"></div></div>
+    <h2 class="serif">Choisis un héros</h2>
+    <p class="muted">Chacun est une place depuis laquelle regarder, pas un déguisement. Aucun bonus mécanique — juste un changement de point de vue. Tu peux revenir à toi quand tu veux, ou pas du tout.</p>
+    ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('personnage_choisi')}</div>` : ""}
+    <div class="row" style="margin-top:12px">
+      <button class="ghost sm" onclick="tirageEclair()">✦ Tirage éclair (hasard)</button>
+      <button class="ghost sm" onclick="piocheTrois()">✦ Pioche 3 au hasard</button>
+    </div>
+  </div>
+  ${_persoTirage ? renderPersoTirage() : `<div class="grid c2">${cards}</div>`}
+  <div class="card">
+    <div class="row between">
+      <button class="ghost" onclick="goTo('mode')">← Mode</button>
+      <button class="or" ${state.personnage?"":"disabled"} onclick="confirmPerso()">Continuer avec ${state.personnage?PERSONNAGES.find(p=>p.id===state.personnage).nom:'...'} →</button>
+    </div>
+  </div>`;
+}
+function renderPersoTirage(){
+  const cards = _persoTirage.map(id=>{
+    const p = PERSONNAGES.find(x=>x.id===id);
+    return `<div class="perso-card ${state.personnage===p.id?'selected':''}" onclick="selectPerso('${p.id}')">
+      <div class="perso-age">${p.age} ans</div>
+      <div class="perso-nom">${p.nom}</div>
+      <div class="perso-titre">${p.titre}</div>
+      <div class="perso-phrase">${p.phrase}</div>
+    </div>`;
+  }).join("");
+  return `<div class="card or"><h3 class="serif">${_persoTirage.length===1?'Ton tirage éclair':'Choisis parmi ces 3'}</h3>
+    <div class="grid ${_persoTirage.length===1?'c2':'c3'}">${cards}</div>
+    <button class="ghost sm" onclick="_persoTirage=null;render()">↺ Voir les 7</button>
+  </div>`;
+}
+function selectPerso(id){ state.personnage = id; render(); }
+function tirageEclair(){ _persoTirage = [pick(PERSONNAGES).id]; state.personnage = _persoTirage[0]; render(); }
+function piocheTrois(){ _persoTirage = shuffleArray(PERSONNAGES.map(p=>p.id)).slice(0,3); state.personnage=null; render(); }
+function confirmPerso(){
+  if(!state.personnage) return;
+  const p = getPersonnage();
+  journal(`Personnage incarné : ${p.nom} (${p.age} ans) — ${p.titre}.`,"perso");
+  _persoTirage = null;
+  state.phase = "situation";
+  render();
+}
+
+// ============================================================================
+// SITUATIONS FICTIVES PROPOSÉES — contenu NOUVEAU (proposition V2.3, à valider par Dina)
+// Construites à partir du fil humain et des tensions de chaque héros (Deck Personnages V0.2).
+// ============================================================================
+const SCENARIOS = {
+  milo:{ situation:"Dans ma rue, deux voisins qui se parlaient tous les jours ne se disent plus bonjour. Les grands font comme si de rien n'était.", intention:"Comprendre ce qui s'est passé, et pourquoi personne n'en parle.", victoire:"Oser poser ma question à quelqu'un qui me répondra vraiment.", faits:"Avant, ils discutaient devant le portail. Depuis trois semaines, chacun rentre chez lui sans un mot.", ressenti:"De la curiosité, et un peu de tristesse.", changer:"Que quelqu'un dise enfin ce qui se passe." },
+  inaya:{ situation:"Dans le groupe de l'atelier, tout le monde a choisi le même projet. Moi j'ai une autre idée, et je n'ai rien dit.", intention:"Comprendre pourquoi je me tais quand je ne suis pas d'accord.", victoire:"Dire mon idée sans avoir peur de perdre ma place.", faits:"Le groupe a voté mardi. J'ai levé la main comme les autres. Mon idée est restée dans mon carnet.", ressenti:"La peur d'être mise à l'écart, et de l'agacement contre moi.", changer:"Qu'une personne du groupe entende mon idée." },
+  noe:{ situation:"On me propose un poste stable ici et, le même mois, une formation à l'étranger. Je repousse ma réponse depuis des semaines.", intention:"Voir ce que je cherche à garder ouvert en ne choisissant pas.", victoire:"Donner une réponse, et savoir à quoi je renonce.", faits:"Deux propositions, deux dates limites à la fin du mois. Mon sac est prêt près de la porte, mais je n'ai répondu à personne.", ressenti:"De l'excitation et de l'angoisse mêlées.", changer:"Arrêter de repousser : fixer le jour où je réponds." },
+  hana:{ situation:"J'ai obtenu le poste que je visais depuis dix ans. Tout le monde me félicite, et je ne ressens presque rien.", intention:"Distinguer ce que je veux encore de ce que j'ai appris à vouloir.", victoire:"Nommer une chose que je choisis pour moi, aujourd'hui.", faits:"Promotion obtenue en mars. Depuis, je travaille autant qu'avant et je ne l'ai fêtée avec personne.", ressenti:"Un vide poli, difficile à avouer.", changer:"M'autoriser à me poser la question sans tout remettre en cause." },
+  maela:{ situation:"Le projet que j'ai créé grandit plus vite que prévu. Je fais tout moi-même et je commence à m'épuiser.", intention:"Comprendre ce que je refuse de lâcher, et pourquoi.", victoire:"Confier une vraie part du projet à quelqu'un.", faits:"Trois nouvelles demandes ce mois-ci. Je réponds aux messages jusqu'à minuit. Personne d'autre n'a les clés.", ressenti:"De la fierté, et une grande fatigue.", changer:"Ne plus être la seule à tout porter." },
+  gabriel:{ situation:"Je tiens la même organisation depuis vingt ans. Elle fonctionne grâce à moi, et je ne sais plus si je continue par choix.", intention:"Trier ce qui mérite encore mon énergie.", victoire:"Décider d'une chose que j'arrête, ou que je transmets.", faits:"J'ouvre et je ferme chaque jour. Je n'ai pas pris plus d'une semaine de congé depuis des années. On me dit : « sans toi, ça s'arrête ».", ressenti:"Le poids du devoir, et une lassitude que je cache.", changer:"Qu'une tâche au moins ne dépende plus de moi." },
+  eleonore:{ situation:"On me demande de raconter, de transmettre, de conseiller. Personne ne me demande ce que j'ai encore envie de commencer.", intention:"Retrouver ce que je n'ai pas encore essayé.", victoire:"Faire un premier pas vers quelque chose de neuf.", faits:"Ma famille m'a offert un album de souvenirs. J'ai une brochure d'inscription dans mon sac depuis un mois, non remplie.", ressenti:"De la tendresse pour eux, et une impatience qui me surprend.", changer:"Remplir cette inscription." },
+  _libre:[
+    { nom:"Camille", situation:"Ma sœur et moi ne nous parlons plus depuis le partage de la maison de notre mère. Les fêtes approchent.", intention:"Comprendre ce qui me retient de faire le premier pas.", victoire:"Savoir si je l'appelle, et ce que je lui dis.", faits:"Dernier échange il y a huit mois, par message. La maison est vendue. Le repas de famille est dans trois semaines.", ressenti:"De la colère, et de la peine dessous.", changer:"Que le silence s'arrête, d'une manière ou d'une autre." },
+    { nom:"Sam", situation:"Mon équipe a doublé en un an. Je passe mes journées à régler des urgences et je n'ai plus le temps de faire mon vrai travail.", intention:"Voir ce que je fais par habitude et que je pourrais confier.", victoire:"Retrouver deux demi-journées par semaine pour l'essentiel.", faits:"Douze personnes au lieu de six. Quarante messages par jour. Mon dossier principal n'a pas avancé depuis un mois.", ressenti:"De la pression et de la frustration.", changer:"Ne plus être le passage obligé de chaque décision." },
+    { nom:"Alex", situation:"Je dors mal depuis des mois et je dis à tout le monde que ça va. On me conseille de ralentir.", intention:"Comprendre pourquoi je n'arrive pas à ralentir.", victoire:"Choisir une chose que j'arrête pour récupérer.", faits:"Couché après minuit, levé à six heures. Deux week-ends travaillés sur quatre. Un rendez-vous repoussé deux fois.", ressenti:"De la fatigue, et la peur de décevoir.", changer:"Protéger mes soirées." }
+  ]
+};
+const SC_CHAMPS = ["situation","intention","victoire"], SC_SAS = {regarder:"faits", ressentir:"ressenti", nommer:"changer"};
+function scenarioCourant(){
+  if(state.personnage) return SCENARIOS[state.personnage];
+  if(state.scenarioIdx == null) state.scenarioIdx = Math.floor(Math.random()*SCENARIOS._libre.length);
+  return SCENARIOS._libre[state.scenarioIdx % SCENARIOS._libre.length];
+}
+function estTexteScenario(t){ return [...Object.values(SCENARIOS).filter(x=>!Array.isArray(x)), ...SCENARIOS._libre].some(sc=>Object.values(sc).includes(t)); }
+function appliquerScenario(force){
+  const sc = scenarioCourant(), p = state.player;
+  SC_CHAMPS.forEach(k=>{ if(force || !p[k] || estTexteScenario(p[k])) p[k] = sc[k]; });
+  Object.entries(SC_SAS).forEach(([k,src])=>{ if(force || !state.sasEntree[k] || estTexteScenario(state.sasEntree[k])) state.sasEntree[k] = sc[src]; });
+  if(sc.nom && (force || !p.nom || estTexteScenario(p.nom))) p.nom = sc.nom;
+}
+function retirerScenario(){
+  const p = state.player;
+  SC_CHAMPS.concat("nom").forEach(k=>{ if(estTexteScenario(p[k])) p[k] = ""; });
+  Object.keys(SC_SAS).forEach(k=>{ if(estTexteScenario(state.sasEntree[k])) state.sasEntree[k] = ""; });
+}
+function lireChampsSituation(){
+  const g = id => document.getElementById(id)?.value?.trim();
+  const p = state.player;
+  if(g("f_nom") !== undefined) p.nom = g("f_nom"); 
+  SC_CHAMPS.forEach(k=>{ const v = g("f_"+k); if(v !== undefined) p[k] = v; });
+}
+function autreHistoire(){ state.scenarioIdx = (state.scenarioIdx||0) + 1; appliquerScenario(true); render(); }
+
+// ============================================================================
+// PHASE: SITUATION
+// ============================================================================
+function renderSituation(){
+  if(state.player.intimite === 'fiction') appliquerScenario(false);
+  const p = state.player;
+  const perso = getPersonnage();
+  return `
+  <div class="card">
+    <div class="eyebrow-line"><span>Étape 2 sur 4 — Poser la situation</span><div class="line"></div></div>
+    <h2 class="serif">Ce qui t'amène aujourd'hui</h2>
+    <p class="muted">${perso ? `Tu vas regarder cette situation à travers <strong>${perso.nom}</strong> (${perso.age} ans — ${perso.titre}). Ton nom à toi reste privé — tu peux écrire le sien ou le tien, comme tu veux.` : "En mode Fiction, le jeu te propose une histoire déjà écrite : tu peux la jouer telle quelle ou la modifier. Rien ne sort de cet appareil."}</p>
+    ${state.player.intimite==='fiction' ? `<p class="tiny">Histoire proposée par le jeu. ${perso ? "" : `<a href="#" onclick="autreHistoire();return false">Proposer une autre histoire</a>`}</p>` : ""}
+  </div>
+  <div class="card papier">
+    <div class="field">
+      <label>Nom (toi ou ton personnage)<span class="hint">Un prénom, un surnom, le nom du héros — tu choisis.</span></label>
+      <input type="text" id="f_nom" value="${escapeHtml(p.nom)}" placeholder="${perso?perso.nom:'Alex, Camille…'}">
+    </div>
+    <div class="field">
+      <label>Niveau d'intimité<span class="hint">Fiction : une histoire inventée. Personnel : ta propre situation, si tu le souhaites.</span></label>
+      <div class="row">
+        <label class="toggle"><input type="radio" name="int" ${p.intimite==='fiction'?'checked':''} onclick="setIntimite('fiction')"><span class="sw"></span>Fiction (recommandé pour commencer)</label>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <label class="toggle"><input type="radio" name="int" ${p.intimite==='legere'?'checked':''} onclick="setIntimite('legere')"><span class="sw"></span>Question légère</label>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <label class="toggle"><input type="radio" name="int" ${p.intimite==='personnel'?'checked':''} onclick="setIntimite('personnel')"><span class="sw"></span>Situation personnelle volontaire</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Ma situation<span class="hint">« Aujourd'hui, je/il/elle suis face à… »</span></label>
+      <textarea id="f_situation" placeholder="Décris en quelques phrases ce qui est là au départ.">${escapeHtml(p.situation)}</textarea>
+    </div>
+    <div class="field">
+      <label>Mon intention<span class="hint">« Dans cette partie, j'aimerais mieux comprendre… »</span></label>
+      <textarea id="f_intention" placeholder="Ce que tu viens explorer, pas forcément résoudre.">${escapeHtml(p.intention)}</textarea>
+    </div>
+    <div class="field">
+      <label>Ma victoire<span class="hint">« À la fin, j'aimerais pouvoir… »</span></label>
+      <textarea id="f_victoire" placeholder="Ce que tu souhaites rendre possible. Pas forcément atteindre.">${escapeHtml(p.victoire)}</textarea>
+    </div>
+    <div class="row between">
+      <button class="ghost" onclick="goTo(state.mode==='personnage'?'personnage':'mode')">← Retour</button>
+      <button class="or" onclick="confirmSituation()">Continuer →</button>
+    </div>
+  </div>`;
+}
+function setIntimite(v){
+  lireChampsSituation();
+  state.player.intimite = v;
+  if(v === 'fiction') appliquerScenario(false); else retirerScenario();
+  render();
+}
+function confirmSituation(){
+  state.player.nom = document.getElementById("f_nom").value.trim() || (getPersonnage()?getPersonnage().nom:"Joueur");
+  state.player.situation = document.getElementById("f_situation").value.trim();
+  state.player.intention = document.getElementById("f_intention").value.trim();
+  state.player.victoire = document.getElementById("f_victoire").value.trim();
+  journal(`Situation posée · intimité : ${state.player.intimite}.`,"setup");
+  state.phase = "archetypes";
+  render();
+}
+
+// ============================================================================
+// PHASE: ARCHÉTYPES
+// ============================================================================
+let _drawnArchs = null;
+let _archMode = "tirage";
+function archModeBar(){
+  return `<div class="row" style="margin-top:6px">
+    <button class="${_archMode==='tirage'?'or':'ghost'} sm" onclick="_archMode='tirage';render()">${state.sophiaOn?'Sophia tire pour moi':'Tirage au hasard'}</button>
+    <button class="${_archMode==='manuel'?'or':'ghost'} sm" onclick="_archMode='manuel';render()">Je connais déjà mes archétypes</button>
+  </div>`;
+}
+function renderArchManuel(){
+  const noms = D.archetypes.map(a=>a.nom).sort((a,b)=>a.replace(/^(L’|LA |LE )/,'').localeCompare(b.replace(/^(L’|LA |LE )/,''),'fr'));
+  const cur = s => getArchBySlot(s)?.nom || "";
+  const sel = (s,lbl) => `<div class="field"><label>${s} — ${lbl}</label><select id="am_${s}"><option value="">Choisir…</option>${noms.map(n=>`<option ${cur(s)===n?'selected':''}>${n}</option>`).join("")}</select></div>`;
+  return `
+  <div class="card">
+    <div class="eyebrow-line"><span>Étape 3 sur 4</span><div class="line"></div></div>
+    <h2 class="serif">Tes trois archétypes</h2>
+    <p class="muted">Indique les archétypes donnés par ton animatrice ou obtenus au <a href="https://animae.dinabus.fr/" target="_blank" rel="noopener">quiz ANIMAE</a>.</p>
+    ${archModeBar()}
+  </div>
+  <div class="card">
+    ${sel("A1","le plus spontané")}${sel("A2","la ressource")}${sel("A3","le moins familier")}
+    <div class="row between">
+      <button class="ghost" onclick="goTo('situation')">← Situation</button>
+      <button class="or" onclick="confirmArchManuel()">Continuer →</button>
+    </div>
+  </div>`;
+}
+function confirmArchManuel(){
+  const v = ["A1","A2","A3"].map(s=>document.getElementById("am_"+s).value);
+  if(v.some(x=>!x) || new Set(v).size < 3){ alert("Choisis trois archétypes différents."); return; }
+  state.archetypes = ["A1","A2","A3"].map((s,i)=>({slot:s, arch:D.archetypes.find(a=>a.nom===v[i])}));
+  confirmArchs();
+}
+function renderArchetypes(){
+  if(_archMode === "manuel") return renderArchManuel();
+  if(!_drawnArchs || _drawnArchs.length !== 3){
+    const complete = D.archetypes.filter(a=>a.lum && a.omb);
+    _drawnArchs = shuffleArray(complete).slice(0,3);
+  }
+  const slots = ["A1","A2","A3"];
+  const slotDesc = {
+    A1:"Celui dans lequel tu te reconnais le plus dans cette situation.",
+    A2:"Celui qui possède quelque chose dont tu pourrais avoir besoin.",
+    A3:"Celui qui t'est le moins familier — potentiellement précieux."
+  };
+  const assigned = state.archetypes.reduce((a,x)=>{ a[x.slot]=x.arch; return a; },{});
+  const cards = _drawnArchs.map((a,i)=>{
+    const assignedSlot = Object.entries(assigned).find(([s,v])=>v===a)?.[0];
+    return `<div class="arch-card ${assignedSlot?'assigned':''}">
+      ${assignedSlot?`<div class="slot-badge">${assignedSlot}</div>`:""}
+      <div class="a-nom">${a.nom}</div>
+      <div class="a-titre">${a.titre}</div>
+      <div class="a-lum"><b>LUMIÈRE</b>${escapeHtml(a.lum)}.</div>
+      <div class="a-omb"><b>OMBRE</b>${escapeHtml(a.omb)}.</div>
+      <div class="slot-row">
+        ${slots.map(s=>`<button class="${assigned[s]===a?'or':'ghost'} sm" onclick="assignArch(${i},'${s}')">${assigned[s]===a?'✓ '+s:s}</button>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+  const allAssigned = slots.every(s=>assigned[s]);
+  return `
+  <div class="card">
+    <div class="eyebrow-line"><span>Étape 3 sur 4</span><div class="line"></div></div>
+    <h2 class="serif">Trois archétypes pour ce parcours</h2>
+    <p class="muted">Voici trois animaux. Range-les : A1 celui qui te ressemble le plus ici, A2 celui qui pourrait t'aider, A3 celui qui t'est le moins familier. C'est pour cette situation, pas pour la vie.</p>
+    ${archModeBar()}
+    ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('archetypes_drawn')}</div>` : ""}
+    <div class="row"><button class="ghost sm" onclick="redrawArchs()">↺ Re-tirer les trois</button></div>
+  </div>
+  <div class="grid c3">${cards}</div>
+  <div class="card sauge">
+    <p class="tiny"><strong>A1</strong> ${slotDesc.A1} · <strong>A2</strong> ${slotDesc.A2} · <strong>A3</strong> ${slotDesc.A3}</p>
+  </div>
+  <div class="card">
+    <div class="row between">
+      <button class="ghost" onclick="goTo('situation')">← Situation</button>
+      <button class="or" ${allAssigned?"":"disabled"} onclick="confirmArchs()">Continuer →</button>
+    </div>
+  </div>`;
+}
+function redrawArchs(){ _drawnArchs = null; state.archetypes = []; render(); }
+function assignArch(archIdx, slot){
+  const a = _drawnArchs[archIdx];
+  state.archetypes = state.archetypes.filter(x=>x.arch !== a);
+  state.archetypes = state.archetypes.filter(x=>x.slot !== slot);
+  state.archetypes.push({slot, arch:a});
+  render();
+}
+function confirmArchs(){
+  const slots = ["A1","A2","A3"];
+  if(!slots.every(s=>state.archetypes.find(x=>x.slot===s))) return;
+  state.archetypes.sort((a,b)=>slots.indexOf(a.slot)-slots.indexOf(b.slot));
+  state.activeSlot = "A1";
+  journal(`Archétypes : A1 ${getArchBySlot("A1").nom} · A2 ${getArchBySlot("A2").nom} · A3 ${getArchBySlot("A3").nom}.`,"archetypes");
+  state.phase = "sas";
+  render();
+}
+
+// ============================================================================
+// PHASE: SAS
+// ============================================================================
+function renderSas(){
+  if(state.player.intimite === 'fiction') appliquerScenario(false);
+  const q = (id,titre,aide,val) => `<div class="field"><label>${titre}<span class="hint">${aide}</span></label><textarea id="${id}" placeholder="Facultatif">${escapeHtml(val)}</textarea></div>`;
+  return `
+  <div class="card">
+    <div class="eyebrow-line"><span>Étape 4 sur 4 — Avant d'entrer</span><div class="line"></div></div>
+    <h2 class="serif">Trois repères pour le voyage</h2>
+    <p class="muted">${state.player.intimite==='fiction' ? "Ils sont déjà remplis pour l'histoire proposée. Modifie-les si tu veux, puis entre." : "Ils t'aideront à mesurer le chemin parcouru à la fin. Réponds en quelques mots, ou entre directement."}</p>
+  </div>
+  <div class="card">
+    ${q("s_r","Que s'est-il passé, concrètement ?","Ce que n'importe qui aurait pu voir ou entendre : qui, quoi, quand.",state.sasEntree.regarder)}
+    ${q("s_rs","Qu'est-ce que cela fait ressentir ?","Un mot ou deux : colère, fatigue, peur, envie…",state.sasEntree.ressentir)}
+    ${q("s_n","Qu'aimerais-tu voir changer en premier ?","Une petite chose suffit.",state.sasEntree.nommer)}
+    <div class="row between">
+      <button class="ghost" onclick="goTo('archetypes')">← Archétypes</button>
+      <button class="or lg" onclick="confirmSas()">Entrer dans ANIMAE →</button>
+    </div>
+  </div>`;
+}
+function confirmSas(){
+  state.sasEntree.regarder = document.getElementById("s_r").value.trim();
+  state.sasEntree.ressentir = document.getElementById("s_rs").value.trim();
+  state.sasEntree.nommer = document.getElementById("s_n").value.trim();
+  journal("Sas d'entrée traversé.","sas");
+  state.phase = "centre";
+  state.position = { monde:"CENTRE", caseIdx:0 };
+  render();
+}
+
+// ============================================================================
+// PHASE: CENTRE ANIMAE
+// ============================================================================
+function renderCentre(){
+  const peut = tracesCount() >= 2 && state.tension < 3;
+  const perso = getPersonnage();
+  return `
+  ${sceneCentre()}
+  <div class="card">
+    <p class="muted">Quatre Mondes entourent le Centre. Le dé décide vers lequel tu pars.</p>
+    ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('enter_centre')}</div>` : ""}
+    <button class="or lg block" onclick="rollDeMondesAnim()">✦ Lancer le Dé des Mondes</button>
+    <div class="row" style="margin-top:12px">
+      <button class="ghost sm" ${state.tension>0?"":"disabled"} onclick="recentrer()">Souffler (−1 Tension)</button>
+      <button class="ghost sm" onclick="recalibrer()">Changer d'archétype actif (${state.activeSlot})</button>
+    </div>
+    ${tracesCount()>=2 ? `<hr><button class="terre block" ${peut?"":"disabled"} onclick="tenterPassageFinal()">${peut?"Aller vers Mon Aboutissement":"Mon Aboutissement — fais d'abord redescendre la Tension"}</button>` : `<p class="tiny center" style="margin-top:14px">Mon Aboutissement s'ouvre avec 2 Traces. Tu en as ${tracesCount()}.</p>`}
+  </div>
+  <div class="card sauge">
+    <h3 class="serif">${escapeHtml(state.player.nom)}${perso ? ` · à travers ${perso.nom}` : ""}</h3>
+    <p><strong>Situation :</strong> ${escapeHtml(state.player.situation) || "<em class='muted'>non précisée</em>"}</p>
+    <p><strong>Intention :</strong> ${escapeHtml(state.player.intention) || "<em class='muted'>non précisée</em>"}</p>
+    <p><strong>Victoire visée :</strong> ${escapeHtml(state.player.victoire) || "<em class='muted'>non précisée</em>"}</p>
+    <p><strong>Archétype actif :</strong> ${state.activeSlot} — ${getActiveArch()?.nom}</p>
+  </div>`;
+}
+function rollDeMondesAnim(){
+  const r = rollDiceMondes();
+  const lettre = r==='CHOIX'?'✦':r==='MYSTERE'?'?':MONDES[r].nom[0];
+  showModal(`<h2 class="serif center">Dé des Mondes</h2>
+    <div style="text-align:center;margin:24px 0"><div class="dice rolling">${lettre}</div></div>
+    <h3 class="serif center">${r==='CHOIX'?'Choix libre':r==='MYSTERE'?'Mystère !':'Monde '+MONDES[r].nom}</h3>
+    <p class="center muted">${r==='CHOIX'?'Tu choisis toi-même le Monde d\'entrée.':r==='MYSTERE'?'Le hasard désignera un Monde…':MONDES[r].explore}</p>
+    <div class="row center">
+      ${r==='CHOIX'?MONDE_ORDER.map(m=>`<button class="indigo sm" onclick="closeModal();entrerMonde('${m}')">${MONDES[m].nom}</button>`).join(""):
+       r==='MYSTERE'?`<button class="or" onclick="closeModal();entrerMondeMystere()">Révéler</button>`:
+       `<button class="or" onclick="closeModal();entrerMonde('${r}')">Entrer</button>`}
+    </div>`);
+}
+function entrerMondeMystere(){ const m = pick(MONDE_ORDER); showModal(`<h2 class="serif center">Mystère révélé : Monde ${MONDES[m].nom}</h2><p class="center">${MONDES[m].explore}</p><button class="or" onclick="closeModal();entrerMonde('${m}')">Entrer</button>`); }
+function choisirMondeManuel(){
+  showModal(`<h2 class="serif">Choisir un Monde</h2>
+    <div class="grid c2">
+      ${MONDE_ORDER.map(m=>`<button class="ghost" onclick="closeModal();entrerMonde('${m}')"><strong>${MONDES[m].nom}</strong>${state.traces[m]?' ✓':''}<br><span class="tiny">${MONDES[m].explore}</span></button>`).join("")}
+    </div>`);
+}
+function entrerMonde(m){
+  enterMonde(m); journal(HONOHA.nouveau_monde(m),"honoha");
+  if(state.sophiaOn) journal(sophiaSay('enter_monde'),"sophia");
+  state.phase = "monde"; state.tour++; render();
+}
+function recentrer(){ if(state.tension===0) return; tensionDown(1); journal("Centre : recentrage.","centre"); render(); }
+function recalibrer(){
+  showModal(`<h2 class="serif">Recalibrer l'archétype actif</h2>
+    <p class="muted">Actuellement actif : <strong>${state.activeSlot}</strong> — ${getActiveArch().nom}</p>
+    <div class="row">${["A1","A2","A3"].map(s=>`<button class="${state.activeSlot===s?'or':'ghost'}" onclick="setActiveSlot('${s}')">${s} — ${getArchBySlot(s)?.nom||'-'}</button>`).join("")}</div>`);
+}
+function setActiveSlot(s){ state.activeSlot=s; journal(`Archétype actif : ${s}.`,"centre"); closeModal(); render(); }
+function tenterPassageFinal(){
+  if(state.tension >= 3){ showModal(`<h2 class="serif">Tension 3 — Saturation</h2><p>Le Passage final exige une Tension inférieure à 3. Régule d'abord.</p><button class="or" onclick="closeModal()">OK</button>`); return; }
+  state.phase = "passage_final"; render();
+}
+
+// ============================================================================
+// PHASE: MONDE
+// ============================================================================
+function renderMonde(){
+  const m = state.position.monde;
+  const pl = PLATEAU[m];
+  const currentCase = pl[state.position.caseIdx];
+  const peutLancer = (state.position.caseIdx === 0 || state.caseResolue) && !state.cercleActif;
+  const archActive = getActiveArch();
+  const ctxActif = state.contexteActif ? D.contextes.find(c=>c.n===state.contexteActif) : null;
+  const defActif = state.defiActif ? D.defis.find(d=>d.n===state.defiActif) : null;
+  const phraseAnimae = archActive && ctxActif && defActif ?
+    `<blockquote class="serif center">« Avec <strong>${archActive.nom}</strong>, dans le Monde <strong>${MONDES[m].nom}</strong>, je traverse <strong>${ctxActif.titre}</strong>, et cela me demande <strong>${defActif.titre}</strong>. »</blockquote>` : "";
+
+  let action = "";
+  if(state.cercleActif){ action = `<button class="or lg block" onclick="goTo('cercle_sortie')">Sortir du Cercle</button>`; }
+  else if(state.tension >= 3){ action = `<button class="terre lg block" onclick="goTo('saturation')">Tension au maximum — souffler</button>`; }
+  else if(state.rencontreDifferee){ action = `<button class="or lg block" onclick="resoudreRencontreDifferee()">Découvrir : ${CASE_LABELS[state.rencontreDifferee.case]}</button>`; }
+  else if(peutLancer){ action = `<button id="btn_de" class="or lg block" onclick="jouerTour()">✦ Lancer le dé et avancer</button>`; }
+  else { action = `<button class="or lg block" onclick="resoudreCase('${currentCase}')">Découvrir : ${CASE_LABELS[currentCase]}</button>`; }
+
+  const legende = ["CONTEXTE","DEFI","MYSTERE","RESSOURCE","MIROIR","ALLIANCE","BIFURCATION","PASSAGE","SEUIL"].map(c=>`<span>${pictoInline(c)} ${CASE_LABELS[c]}</span>`).join("") + `<span>A1 A2 A3 : tes archétypes (clair = Lumière, sombre = Ombre)</span>`;
+  return `
+  ${sceneMonde(m, state.position.caseIdx)}
+  <div class="card">
+    <div class="ici"><b>Tu es sur</b> ${CASE_LABELS[currentCase]}${state.caseResolue && currentCase!=="SEUIL" ? " — fait" : ""}</div>
+    <div class="row" style="margin-bottom:14px">
+      ${state.cercleActif?`<span class="pill ombre">Cercle : tu tournes en rond</span>`:""}
+      ${state.traces[m]?`<span class="pill">❖ Trace acquise</span>`:`<span class="pill sauge">Pas encore de Trace ici</span>`}
+      <span class="pill sauge">Tour du Monde ${Math.min(state.compteurMonde+1,2)}/2</span>
+    </div>
+    ${action}
+    <div class="row" style="margin-top:14px">
+      ${ctxActif?`<button class="ghost sm" onclick="voirContexteActif()">Mon Contexte : ${ctxActif.titre}</button>`:""}
+      ${defActif?`<button class="ghost sm" onclick="voirDefiActif()">Mon Défi : ${defActif.titre}</button>`:""}
+    </div>
+    <details class="legende"><summary>Lire le chemin</summary>${legende}</details>
+  </div>
+  ${phraseAnimae}`;
+}
+let _anim = false;
+function deplacer(n){
+  const result = advance(n); state.tour++; state.caseResolue = false;
+  if(result === "cercle"){ if(state.sophiaOn) journal(sophiaSay('cercle_entered'),"sophia"); }
+  else journal(HONOHA.nouvelle_case(result, state.position.monde),"honoha");
+  saveState();
+  return result;
+}
+function executerDeplacement(n){ deplacer(n); render(); }
+function jouerTour(){
+  if(_anim) return;
+  const roll = rollDiceDepl(), from = state.position.caseIdx;
+  const result = deplacer(roll), to = state.position.caseIdx;
+  const steps = []; let i = from;
+  for(let k=0;k<roll;k++){ i = (i+1) % 13; steps.push(i); if(result === "cercle" && i === to) break; }
+  const dice = document.getElementById("dice_float"), av = document.getElementById("avatar"), btn = document.getElementById("btn_de");
+  if(!dice || !av || !av.style || !dice.classList){ render(); return; }
+  _anim = true; if(btn) btn.disabled = true;
+  dice.textContent = roll; dice.hidden = false; dice.classList.add("rolling");
+  setTimeout(()=>{
+    dice.hidden = true; let k = 0;
+    const tick = ()=>{
+      if(k >= steps.length){ _anim = false; render(); return; }
+      const p = casePos(steps[k++]);
+      av.style.transform = `translate(${p.x}px,${p.y}px) scale(${p.s})`;
+      setTimeout(tick, 460);
+    };
+    tick();
+  }, 950);
+}
+function resoudreCase(c){
+  switch(c){
+    case "NEUTRE": journal("Case Respiration — rien à résoudre.","neutre"); finirResolutionCase(); break;
+    case "CONTEXTE": tireContexte(); break;
+    case "DEFI": tireDefi(); break;
+    case "MYSTERE": state._mystere=null; state.phase = "resolution_mystere"; render(); break;
+    case "RESSOURCE": state.phase = "resolution_ressource"; render(); break;
+    case "MIROIR": state.phase = "resolution_miroir"; render(); break;
+    case "ALLIANCE": state.phase = "resolution_alliance"; render(); break;
+    case "A1L": case "A1O": case "A2L": case "A2O": case "A3L": case "A3O":
+      state.phase = "resolution_archetype"; state._currentArchCase = c; render(); break;
+    case "BIFURCATION": state.phase = "bifurcation"; render(); break;
+    case "PASSAGE": state.phase = "passage"; render(); break;
+    default:
+      finirResolutionCase();
+  }
+}
+function tireContexte(){
+  if(state.contexteActif){ journal(`Contexte précédent archivé.`,"contexte"); }
+  const c = drawContexte(); state.contexteActif = c.n;
+  journal(`Contexte tiré : ${c.titre}.`,"contexte");
+  if(state.sophiaOn) journal(sophiaSay('contexte_tire'),"sophia");
+  state.phase = "resolution_contexte"; render();
+}
+function tireDefi(){
+  if(state.defiActif){ tensionUp(1); journal(`Défi déjà actif — PRESSION : +1 Tension.`,"defi"); finirResolutionCase(); return; }
+  const d = drawDefi(); state.defiActif = d.n;
+  journal(`Défi tiré : ${d.titre}.`,"defi");
+  if(state.sophiaOn) journal(sophiaSay('defi_tire'),"sophia");
+  state.phase = "resolution_defi"; render();
+}
+function voirContexteActif(){ const c = D.contextes.find(x=>x.n===state.contexteActif); showModal(`<div class="eyebrow">Contexte ${c.n}</div><h2 class="serif">${c.titre}</h2><p>${escapeHtml(c.quoi)}</p><blockquote>${escapeHtml(c.ei)}</blockquote><button class="or" onclick="closeModal()">Fermer</button>`); }
+function voirDefiActif(){ const d = D.defis.find(x=>x.n===state.defiActif); showModal(`<div class="eyebrow">Défi ${d.n}</div><h2 class="serif">${d.titre}</h2><p class="muted italic">${escapeHtml(d.sous)}</p><p>${escapeHtml(d.quoi)}</p><blockquote><strong>Traversé si :</strong> ${escapeHtml(d.ts)}</blockquote><button class="or" onclick="closeModal()">Fermer</button>`); }
+function resoudreRencontreDifferee(){ const rd = state.rencontreDifferee; state.rencontreDifferee = null; journal(`Résolution différée : ${CASE_LABELS[rd.case]}.`,"differee"); resoudreCase(rd.case); }
+
+function jokerVoie(onclick, selected){
+  if(state.jokerUsed) return "";
+  return `<button class="voie je-passe ${selected?'selected':''}" onclick="${onclick}"><div class="vname">Joker « Je passe »</div><div class="vq">Une seule fois par partie. Aucun point, aucune pénalité.</div></button>`;
+}
+function jokerBtn(){ return state.jokerUsed ? "" : `<button class="ghost" onclick="jokerDirect()">Joker « Je passe » (1 par partie)</button>`; }
+function useJoker(){ state.jokerUsed = true; journal("Joker « Je passe » utilisé.","joker"); if(state.sophiaOn) journal(sophiaSay('joker_passe'),"sophia"); }
+function jokerDirect(){ useJoker(); state._mystere = null; finirResolutionCase(); }
+function securiteLien(){ return `<p class="tiny center" style="margin:14px 0 0"><a href="#" onclick="droitSecurite();return false">Cette carte touche à quelque chose de trop sensible ? L'écarter</a></p>`; }
+function droitSecurite(){
+  journal("Carte écartée (droit de sécurité).","securite");
+  if(state.phase === "resolution_defi") state.defiActif = null;
+  if(state.phase === "resolution_contexte") state.contexteActif = null;
+  state._mystere = null; _ctxReponse = {voie:null,texte:""}; _defReponse = {voie:null,texte:""}; _archReponse = {voie:null,texte:"",issue:null};
+  finirResolutionCase();
+}
+// ============================================================================
+// RÉSOLUTION : CONTEXTE
+// ============================================================================
+let _ctxReponse = { voie:null, texte:"" };
+function renderResolutionContexte(){
+  const c = D.contextes.find(x=>x.n===state.contexteActif);
+  return `
+  <div class="card or">
+    <div class="eyebrow">Contexte ${c.n}</div>
+    <h2 class="serif">${c.titre}</h2>
+    <p class="tiny muted italic">Temporalité : ${c.tempo || "—"}</p>
+    <p>${escapeHtml(c.quoi)}</p>
+    ${c.qq && c.qq.length ? `<h4>Les questions de ta carte</h4><ul>${c.qq.map(q=>`<li>${escapeHtml(q)}</li>`).join("")}</ul>`:""}
+    <blockquote><strong>Effet initial :</strong> ${escapeHtml(c.ei)}</blockquote>
+    ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('contexte_tire')}</div>` : ""}
+  </div>
+  <div class="card">
+    <h3 class="serif">Choisis une voie</h3>
+    <div class="voies">
+      ${renderVoieButtons(c.voies, 'ctx')}
+      ${jokerVoie("choisirVoieCtx('je_passe')", _ctxReponse.voie==='je_passe')}
+    </div>
+    ${_ctxReponse.voie && _ctxReponse.voie!=='je_passe' ? `
+      <div class="field" style="margin-top:16px">
+        <label>Formule ta réponse<span class="hint">Quelques mots suffisent.</span></label>
+        <textarea id="ctx_reponse" placeholder="Ta réponse à la voie ${_ctxReponse.voie.toUpperCase()}.">${escapeHtml(_ctxReponse.texte)}</textarea>
+      </div>
+      <button class="or" onclick="validerCtx()">Valider ma réponse</button>
+    ` : _ctxReponse.voie === 'je_passe' ? `<button class="or" onclick="validerCtx()">Utiliser mon Joker</button>` : ""}
+    ${securiteLien()}
+  </div>`;
+}
+function renderVoieButtons(voies, prefix){
+  const list = ["conscience","action","alliance","adaptation"];
+  const current = prefix==='ctx' ? _ctxReponse.voie : _defReponse.voie;
+  return list.map(v=>{
+    const txt = voies[v] || "";
+    const parts = txt.split("→");
+    const q = parts[0] ? parts[0].trim() : "";
+    const ef = parts[1] ? "→ "+parts[1].trim() : "";
+    return `<button class="voie ${current===v?'selected':''}" onclick="choisirVoie${prefix==='ctx'?'Ctx':'Def'}('${v}')">
+      <div class="vname">${v.charAt(0).toUpperCase()+v.slice(1)}</div>
+      <div class="vq">${escapeHtml(q)}</div>
+      ${ef ? `<div class="vef">${escapeHtml(ef)}</div>`:""}
+    </button>`;
+  }).join("");
+}
+function choisirVoieCtx(v){ _ctxReponse.voie = v; render(); }
+function validerCtx(){
+  const c = D.contextes.find(x=>x.n===state.contexteActif);
+  if(_ctxReponse.voie === 'je_passe'){
+    useJoker();
+    _ctxReponse = { voie:null, texte:"" };
+    finirResolutionCase(); return;
+  }
+  const texte = document.getElementById("ctx_reponse")?.value.trim();
+  if(!texte){ alert("Écris quelques mots pour valider."); return; }
+  addPoint(_ctxReponse.voie); setTraceIci();
+  journal(`Contexte ${c.titre} — voie ${_ctxReponse.voie} : « ${texte} ».`,"ctx");
+  const ef = (c.voies[_ctxReponse.voie]||"").toLowerCase();
+  if(ef.includes("ressource") && !ef.includes("si")) gainResource(`[${c.titre}] ${texte.slice(0,40)}`, `ctx ${c.titre} ${_ctxReponse.voie}`);
+  if(ef.includes("−1 tension") || ef.includes("-1 tension")) tensionDown(1);
+  if(ef.includes("avance +1")) scheduleDeplacementSecondaire(1);
+  _ctxReponse = { voie:null, texte:"" };
+  finirResolutionCase();
+}
+function finirResolutionCase(){ state.caseResolue = true; state.phase = "monde"; render(); }
+function scheduleDeplacementSecondaire(n){
+  const pl = PLATEAU[state.position.monde];
+  const newIdx = (state.position.caseIdx + n) % pl.length;
+  const landing = pl[newIdx];
+  if(newIdx < state.position.caseIdx) state.compteurMonde++;
+  state.rencontreDifferee = { monde:state.position.monde, case:landing, caseIdx:newIdx };
+  state.position.caseIdx = newIdx;
+  journal(`Déplacement secondaire → ${CASE_LABELS[landing]} (rencontre différée).`,"differee");
+}
+
+// ============================================================================
+// RÉSOLUTION : DÉFI
+// ============================================================================
+let _defReponse = { voie:null, texte:"" };
+function renderResolutionDefi(){
+  const d = D.defis.find(x=>x.n===state.defiActif);
+  return `
+  <div class="card terre">
+    <div class="eyebrow">Défi ${d.n}</div>
+    <h2 class="serif">${d.titre}</h2>
+    <p class="muted italic">${escapeHtml(d.sous)}</p>
+    <p>${escapeHtml(d.quoi)}</p>
+    ${d.dev?`<p><strong>Ce que tu développes :</strong> ${escapeHtml(d.dev)}</p>`:""}
+    ${d.qq && d.qq.length?`<h4>Trois questions pour explorer</h4><ul>${d.qq.map(q=>`<li>${escapeHtml(q)}</li>`).join("")}</ul>`:""}
+    ${d.aide && d.aide.length?`<h4>Ce qui aide</h4><ul>${d.aide.map(a=>`<li>${escapeHtml(a)}</li>`).join("")}</ul>`:""}
+    <blockquote><strong>Traversé si :</strong> ${escapeHtml(d.ts)}</blockquote>
+    ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('defi_tire')}</div>` : ""}
+  </div>
+  <div class="card">
+    <h3 class="serif">Choisis ton issue</h3>
+    <div class="voies">
+      ${renderVoieButtons(d.voies, 'def')}
+      ${jokerVoie("choisirVoieDef('je_passe')", _defReponse.voie==='je_passe')}
+      <button class="voie ${_defReponse.voie==='en_cours'?'selected':''}" onclick="choisirVoieDef('en_cours')" style="opacity:.8"><div class="vname">En cours</div><div class="vq">Tu as tenté mais ne remplis pas encore le critère. Le Défi reste actif. Aucun point.</div></button>
+    </div>
+    ${_defReponse.voie && _defReponse.voie!=='je_passe' && _defReponse.voie!=='en_cours' ? `
+      <div class="field" style="margin-top:16px">
+        <label>Formule ta réponse au critère « traversé si »<span class="hint">Une réponse structurée suffit — pas besoin d'être parfaite.</span></label>
+        <textarea id="def_reponse" placeholder="Rédige ta réponse.">${escapeHtml(_defReponse.texte)}</textarea>
+      </div>
+      <button class="or" onclick="validerDef()">Valider — traverser le Défi</button>
+    ` : _defReponse.voie === 'je_passe' ? `<button class="or" onclick="validerDef()">Utiliser mon Joker</button>` : _defReponse.voie === 'en_cours' ? `<button class="or" onclick="validerDef()">Laisser en cours</button>` : ""}
+    ${securiteLien()}
+  </div>`;
+}
+function choisirVoieDef(v){ _defReponse.voie = v; render(); }
+function validerDef(){
+  const d = D.defis.find(x=>x.n===state.defiActif);
+  if(_defReponse.voie === 'je_passe'){ useJoker(); journal(`Défi ${d.titre} : rencontré, non traversé.`,"def"); state.defiActif=null; _defReponse={voie:null,texte:""}; finirResolutionCase(); return; }
+  if(_defReponse.voie === 'en_cours'){ journal(`Défi ${d.titre} en cours.`,"def"); _defReponse={voie:null,texte:""}; finirResolutionCase(); return; }
+  const texte = document.getElementById("def_reponse")?.value.trim();
+  if(!texte){ alert("Formule ta réponse."); return; }
+  addPoint(_defReponse.voie);
+  journal(`Défi ${d.titre} traversé — ${_defReponse.voie} : « ${texte} ».`,"def");
+  const em = (d.em||"").toLowerCase();
+  if(em.includes("ressource") && state.ressources.length<3){ gainResource(`[${d.titre}] ${texte.slice(0,40)}`, `défi ${d.titre}`); if(state.sophiaOn) journal(sophiaSay('ressource_gained'),"sophia"); }
+  if(em.includes("−1 tension") || em.includes("-1 tension")) tensionDown(1);
+  if(em.includes("avance +1")) scheduleDeplacementSecondaire(1);
+  setTraceIci();
+  state.defiActif = null; _defReponse={voie:null,texte:""};
+  finirResolutionCase();
+}
+
+// ============================================================================
+// RÉSOLUTION : ARCHÉTYPE
+// ============================================================================
+let _archReponse = { voie:null, texte:"", issue:null };
+function renderResolutionArchetype(){
+  const c = state._currentArchCase;
+  const slot = c[0]+c[1]; const polarite = c[2];
+  const arch = getArchBySlot(slot);
+  const isLumiere = polarite === 'L';
+  const question = isLumiere ? arch.ql : arch.qo;
+  const texteArch = isLumiere ? arch.lum : arch.omb;
+  if(isLumiere){
+    return `
+    <div class="card or">
+      <div class="eyebrow">${slot} · Lumière</div>
+      <h2 class="serif">${arch.nom}</h2>
+      <p class="italic muted">${arch.titre}</p>
+      <span class="pill">LUMIÈRE</span>
+      <p style="margin-top:14px">${escapeHtml(texteArch)}.</p>
+      <blockquote>${escapeHtml(question)}</blockquote>
+      <p class="tiny muted">Une Lumière n'est pas une autoroute. Tu dois juger si cette force est ajustée à ta situation.</p>
+      ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('archetype_lum')}</div>` : ""}
+    </div>
+    <div class="card">
+      <h3 class="serif">Choisis une voie</h3>
+      <div class="voies">
+        ${["conscience","action","alliance","adaptation"].map(v=>`<button class="voie ${_archReponse.voie===v?'selected':''}" onclick="choisirVoieArch('${v}')"><div class="vname">${v.charAt(0).toUpperCase()+v.slice(1)}</div><div class="vq">+1 ${v.toUpperCase()}</div></button>`).join("")}
+        ${jokerVoie("choisirVoieArch('je_passe')", _archReponse.voie==='je_passe')}
+      </div>
+      ${_archReponse.voie && _archReponse.voie !== 'je_passe' ? `
+        <div class="field" style="margin-top:16px">
+          <label>Si tu utilisais consciemment cette force ici, qu'est-ce que tu ferais ?</label>
+          <textarea id="arch_r">${escapeHtml(_archReponse.texte)}</textarea>
+        </div>
+        <button class="or" onclick="validerArchLum()">Valider</button>
+      ` : _archReponse.voie === 'je_passe' ? `<button class="or" onclick="validerArchJePasse()">Utiliser mon Joker</button>` : ""}
+      ${securiteLien()}
+    </div>`;
+  } else {
+    return `
+    <div class="card indigo">
+      <div class="eyebrow">${slot} · Ombre</div>
+      <h2 class="serif">${arch.nom}</h2>
+      <p class="italic muted">${arch.titre}</p>
+      <span class="pill ombre">OMBRE — ta réaction entre en jeu</span>
+      <p style="margin-top:14px">${escapeHtml(texteArch)}.</p>
+      <blockquote>${escapeHtml(question)}</blockquote>
+      <p class="tiny muted">Une Ombre n'est pas une faute. Elle protège quelque chose. Nomme-la d'abord — puis choisis ce que tu en fais.</p>
+      ${state.sophiaOn ? `<div class="sophia"><span class="who">Sophia</span>${sophiaSay('archetype_omb')}</div>` : ""}
+    </div>
+    <div class="card">
+      <h3 class="serif">Étape 1 — Nomme la réaction et ce qu'elle protège</h3>
+      <div class="field">
+        <label>Comment cette réaction se manifesterait dans ta situation ?</label>
+        <textarea id="arch_reac">${escapeHtml(_archReponse.texte)}</textarea>
+      </div>
+      <h3 class="serif">Étape 2 — Choisis ton issue</h3>
+      <div class="voies">
+        <button class="voie ${_archReponse.issue==='subir'?'selected':''}" onclick="choisirIssueArch('subir')"><div class="vname">Subir l'automatisme</div><div class="vq">+1 Tension. +1 Conscience (identification).</div></button>
+        <button class="voie ${_archReponse.issue==='reguler'?'selected':''}" onclick="choisirIssueArch('reguler')"><div class="vname">Réguler</div><div class="vq">Formuler ce que tu ferais autrement. +1 Adaptation.</div></button>
+        <button class="voie ${_archReponse.issue==='appui'?'selected':''}" onclick="choisirIssueArch('appui')"><div class="vname">Demander appui</div><div class="vq">Formuler un soutien précis. +1 Alliance.</div></button>
+        ${jokerVoie("choisirIssueArch('passe')", _archReponse.issue==='passe')}
+      </div>
+      <button class="or" onclick="validerArchOmbre()" ${_archReponse.issue?"":"disabled"}>Valider mon issue</button>
+      ${securiteLien()}
+    </div>`;
+  }
+}
+function choisirVoieArch(v){ _archReponse.voie=v; render(); }
+function choisirIssueArch(i){ _archReponse.issue=i; render(); }
+function validerArchLum(){
+  const texte = document.getElementById("arch_r")?.value.trim();
+  if(!texte){ alert("Formule ta réponse."); return; }
+  addPoint(_archReponse.voie); setTraceIci(); journal(`${state._currentArchCase} Lumière — ${_archReponse.voie} : « ${texte} ».`,"arch");
+  _archReponse={voie:null,texte:"",issue:null}; finirResolutionCase();
+}
+function validerArchJePasse(){ useJoker(); _archReponse={voie:null,texte:"",issue:null}; finirResolutionCase(); }
+function validerArchOmbre(){
+  const reaction = document.getElementById("arch_reac")?.value.trim() || "";
+  const c = state._currentArchCase;
+  switch(_archReponse.issue){
+    case "subir": tensionUp(1); state.points.CONSCIENCE++; journal(`+1 Conscience (identification).`,"point"); journal(`${c} Ombre : subir. « ${reaction.slice(0,60)} »`,"arch"); break;
+    case "reguler": addPoint("adaptation"); setTraceIci(); journal(`${c} Ombre : régulée. « ${reaction.slice(0,60)} »`,"arch"); break;
+    case "appui": addPoint("alliance"); setTraceIci(); journal(`${c} Ombre : appui. « ${reaction.slice(0,60)} »`,"arch"); break;
+    case "passe": useJoker(); break;
+  }
+  _archReponse={voie:null,texte:"",issue:null}; finirResolutionCase();
+}
+
+// ============================================================================
+// RÉSOLUTIONS : MYSTÈRE · RESSOURCE · MIROIR · ALLIANCE
+// ============================================================================
+function renderResolutionMystere(){
+  if(!state._mystere){
+    const r = Math.random()*100;
+    state._mystere = r<40?"ARCH":r<60?"ONDE":r<80?"ECLAIR":r<90?"PORTAIL":"BASCULE";
+    if(state._mystere==="ARCH") state._currentArchCase = pick(["A1L","A1O","A2L","A2O","A3L","A3O"]);
+    saveState();
+  }
+  const t = state._mystere;
+  if(t==="ARCH") return `<div class="card indigo"><div class="eyebrow">Mystère</div><h2 class="serif">Un archétype surgit</h2><p>Le Mystère révèle <strong>${CASE_LABELS[state._currentArchCase]}</strong>.</p><button class="or" onclick="state._mystere=null;goTo('resolution_archetype')">Continuer</button></div>`;
+  if(t==="ONDE") return `<div class="card indigo"><div class="eyebrow">Mystère · Onde</div><h2 class="serif">Une onde traverse le Monde</h2>
+    <div class="voies">
+      <button class="voie" onclick="appliquerOnde('porter')"><div class="vname">Se laisser porter</div><div class="vq">Avance +1 (rencontre différée).</div></button>
+      <button class="voie" onclick="appliquerOnde('observer')"><div class="vname">Observer l'onde</div><div class="vq">+1 Conscience.</div></button>
+
+    </div></div>`;
+  if(t==="ECLAIR") return `<div class="card indigo"><div class="eyebrow">Mystère · Éclair</div><h2 class="serif">Un éclair de conscience</h2><p>Quelque chose apparaît que tu n'avais pas vu. Nomme-le brièvement.</p>
+    <textarea id="eclair_txt" placeholder="Ce que tu vois d'un coup."></textarea><div class="spacer-sm"></div>
+    <div class="row"><button class="or" onclick="validerEclair()">Valider — +1 Conscience</button>${jokerBtn()}</div></div>`;
+  if(t==="PORTAIL") return `<div class="card indigo"><div class="eyebrow">Mystère · Portail ✦</div><h2 class="serif">Un Portail s'ouvre</h2><p>Transfert forcé vers un autre Monde. Il ignore la Trace et brise le Cercle.</p><button class="or" onclick="appliquerPortail()">Lancer le Dé des Mondes</button></div>`;
+  return `<div class="card indigo"><div class="eyebrow">Mystère · Bascule ✦</div><h2 class="serif">Quelque chose bascule</h2><p>Ta manière d'avancer est remise en question. Si tu formules ce que ce changement t'oblige à faire différemment : +1 Adaptation.</p>
+    <textarea id="bascule_txt" placeholder="Ce que tu ajustes."></textarea><div class="spacer-sm"></div>
+    <div class="row"><button class="or" onclick="validerBascule(true)">Formuler (+1 Adaptation)</button><button class="ghost" onclick="validerBascule(false)">Continuer sans formuler</button></div></div>`;
+}
+function appliquerOnde(ch){
+  state._mystere=null;
+  if(ch==='porter'){ journal("Onde : se laisser porter.","onde"); scheduleDeplacementSecondaire(1); state.phase="monde"; render(); return; }
+  if(ch==='observer'){ addPoint('conscience'); journal("Onde observée.","onde"); }
+  else journal("Onde : je passe.","onde");
+  finirResolutionCase();
+}
+function validerEclair(){ const t=document.getElementById("eclair_txt").value.trim(); if(!t){alert("Nomme en quelques mots.");return;} addPoint('conscience'); journal(`Éclair : « ${t} ».`,"mystere"); state._mystere=null; finirResolutionCase(); }
+function passerMystere(){ journal("Mystère : je passe.","mystere"); state._mystere=null; finirResolutionCase(); }
+function appliquerPortail(){
+  let dest = rollDiceMondes(); if(dest==="CHOIX"||dest==="MYSTERE") dest = pick(MONDE_ORDER);
+  state._mystere=null;
+  if(dest===state.position.monde){
+    journal("Portail → Centre.","portail"); state.phase="centre"; state.position={monde:"CENTRE",caseIdx:0}; state.cercleActif=false; render();
+    showModal(`<h2 class="serif">Portail : retour au Centre</h2><p>Le dé désigne ton Monde actuel : tu reviens au Centre ANIMAE.</p><button class="or" onclick="closeModal()">OK</button>`);
+  } else {
+    journal(`Portail → Monde ${MONDES[dest].nom}.`,"portail"); enterMonde(dest); state.phase="monde"; state.tour++; render();
+    showModal(`<h2 class="serif">Portail : Monde ${MONDES[dest].nom}</h2><p>${MONDES[dest].explore}</p><button class="or" onclick="closeModal()">Entrer</button>`);
+  }
+}
+function validerBascule(withText){
+  if(withText){ const t=document.getElementById("bascule_txt").value.trim(); if(!t){alert("Formule ce que tu ajustes.");return;} addPoint('adaptation'); journal(`Bascule : « ${t} ».`,"bascule"); }
+  else journal("Bascule.","bascule");
+  if(state.cercleActif){ state.cercleActif=false; state.compteurMonde=0; }
+  state._mystere=null; finirResolutionCase();
+}
+
+function renderResolutionRessource(){
+  return `<div class="card sauge"><div class="eyebrow">Case Ressource</div><h2 class="serif">Nomme une ressource réelle</h2>
+    <p>Une compétence, un temps, une personne, une information, un outil, un lieu. Quelque chose de <strong>réellement mobilisable</strong> dans la situation.</p>
+    <textarea id="res_txt" placeholder="Ta ressource, en une phrase."></textarea><div class="spacer-sm"></div>
+    <div class="row"><button class="or" onclick="validerRessource()">Valider</button>${jokerBtn()}</div>
+    <p class="tiny">Tu as ${state.ressources.length}/3 ressources.</p></div>`;
+}
+function validerRessource(){
+  const t=document.getElementById("res_txt").value.trim(); if(!t){alert("Nomme ta ressource.");return;}
+  if(!gainResource(t,"case Ressource")) journal("Ressources déjà au maximum (3).","ressource");
+  else if(state.sophiaOn) journal(sophiaSay('ressource_gained'),"sophia");
+  finirResolutionCase();
+}
+
+function renderResolutionMiroir(){
+  return `<div class="card indigo"><div class="eyebrow">Case Miroir</div><h2 class="serif">Un miroir t'est tendu</h2>
+    <p class="muted">En solo, le miroir te renvoie tes propres mots — sans conseil, sans jugement.</p>
+    <div class="field"><label>Dis en une phrase ce que tu veux montrer au miroir</label><textarea id="miroir_txt" placeholder="Une phrase sur la situation ou le ressenti."></textarea></div>
+    <div class="row"><button class="or" onclick="appliquerMiroir()">Tendre le miroir</button>${jokerBtn()}</div></div>`;
+}
+function appliquerMiroir(){
+  const t=document.getElementById("miroir_txt").value.trim(); if(!t){alert("Formule ta phrase.");return;}
+  journal(`Miroir : « ${t} ».`,"miroir");
+  showModal(`<h2 class="serif">Le miroir</h2><div class="sophia"><span class="who">Miroir</span>Ce que je t'entends dire : « ${escapeHtml(t)} ». Est-ce bien ce que tu voulais dire ?</div>
+    <p class="tiny">Le miroir n'attribue pas de point automatiquement. Si cette reformulation t'éclaire, tu peux la retenir.</p>
+    <div class="row"><button class="or" onclick="closeModal();addPoint('conscience');setTraceIci();finirResolutionCase()">Ça m'éclaire (+1 Conscience)</button><button class="ghost" onclick="closeModal();finirResolutionCase()">Juste recevoir</button></div>`);
+}
+function setTraceIci(){ if(setTrace(state.position.monde) && state.sophiaOn) journal(sophiaSay('trace_gained'),"sophia"); }
+
+function renderResolutionAlliance(){
+  return `<div class="card terre"><div class="eyebrow">Case Alliance</div><h2 class="serif">Demande une aide précise</h2>
+    <p>En solo, l'Alliance est une demande que tu formules — pour qu'elle devienne dicible.</p>
+    <div class="field"><label>À qui, quoi, pour quoi ?</label><textarea id="all_txt" placeholder="Une demande structurée."></textarea></div>
+    <div class="row"><button class="or" onclick="validerAlliance()">Valider — +1 Alliance</button>${jokerBtn()}</div></div>`;
+}
+function validerAlliance(){ const t=document.getElementById("all_txt").value.trim(); if(!t){alert("Formule ta demande.");return;} addPoint('alliance'); journal(`Alliance : « ${t} ».`,"alliance"); setTraceIci(); finirResolutionCase(); }
+
+// ============================================================================
+// CERCLE · BIFURCATION · PASSAGE · SATURATION
+// ============================================================================
+function renderCercleSortie(){
+  return `<div class="card indigo"><div class="eyebrow">Cercle actif</div><h2 class="serif">Tu tournes dans ce Monde</h2><p>Pour sortir, change quelque chose avant de reprendre.</p>
+    ${state.sophiaOn?`<div class="sophia"><span class="who">Sophia</span>${sophiaSay('cercle_entered')}</div>`:""}</div>
+  <div class="card"><div class="voies">
+    <button class="voie" onclick="sortirCercle('adaptation')"><div class="vname">Adapter</div><div class="vq">Formuler un changement de stratégie. +1 Adaptation.</div></button>
+    <button class="voie" onclick="sortirCercle('alliance')"><div class="vname">S'allier</div><div class="vq">Solliciter un soutien précis. +1 Alliance.</div></button>
+    <button class="voie" onclick="sortirCercle('action')"><div class="vname">Agir</div><div class="vq">Une action concrète qui rompt la répétition. +1 Action.</div></button>
+    <button class="voie" onclick="sortirCercle('archetype')"><div class="vname">Changer d'archétype actif</div><div class="vq">Activer un autre archétype. Aucun point automatique.</div></button>
+  </div></div>`;
+}
+function sortirCercle(c){
+  if(c==='archetype'){
+    showModal(`<h2 class="serif">Activer un autre archétype</h2><div class="row">${["A1","A2","A3"].filter(s=>s!==state.activeSlot).map(s=>`<button class="or" onclick="state.activeSlot='${s}';journal('Sortie de Cercle : archétype actif ${s}.','cercle');closeModal();terminerSortieCercle()">${s} — ${getArchBySlot(s).nom}</button>`).join("")}</div>`);
+    return;
+  }
+  const q = c==='adaptation'?"Qu'est-ce que tu changes dans ta manière de faire ?":c==='alliance'?"À qui demandes-tu quoi ?":"Quelle action concrète rompt la répétition ?";
+  showModal(`<h2 class="serif">Formule ta sortie</h2><p class="muted">${q}</p><textarea id="cercle_txt"></textarea><div class="spacer-sm"></div><button class="or" onclick="appliquerSortieCercle('${c}')">Valider</button>`);
+}
+function appliquerSortieCercle(c){
+  const t=document.getElementById("cercle_txt").value.trim(); if(!t){alert("Formule ta sortie.");return;}
+  addPoint(c); journal(`Sortie de Cercle (${c}) : « ${t} ».`,"cercle"); closeModal(); terminerSortieCercle();
+}
+function terminerSortieCercle(){
+  state.cercleActif=false; state.compteurMonde=0;
+  if(state.tension>=3) tensionDown(1);
+  state.position.caseIdx = PLATEAU[state.position.monde].indexOf("BIFURCATION");
+  journal("Cercle rompu — repositionné à la Bifurcation.","cercle");
+  state.caseResolue = true; state.tour++; state.phase="monde"; render();
+}
+
+function renderBifurcation(){
+  const m=state.position.monde, dest=CHEMINS.bifurc[m], sentier=CHEMINS.sentiers[m], ok=state.traces[m];
+  return `<div class="card or"><div class="eyebrow">Bifurcation</div><h2 class="serif">Changer de trajectoire ?</h2>
+    <p>${ok?"Tu as la Trace de ce Monde : tu peux partir.":"Il te manque la Trace de ce Monde : la sortie reste fermée. Résous un Défi, un Miroir ou une Alliance ici pour l'obtenir."}</p>
+    ${state.sophiaOn?`<div class="sophia"><span class="who">Sophia</span>${sophiaSay('bifurcation')}</div>`:""}</div>
+  <div class="card"><div class="voies">
+    ${ok?`<button class="voie" onclick="bifurquer('${dest}')"><div class="vname">Bifurcation sûre → ${MONDES[dest].nom}</div><div class="vq">Tu rejoins le Seuil du Monde ${MONDES[dest].nom}.</div></button>
+    <button class="voie" onclick="bifurquer('${sentier}',true)"><div class="vname">Sentier de traverse → ${MONDES[sentier].nom}</div><div class="vq">Plus risqué. ${state.tension>=2?"À Tension 2, coûte 1 Ressource.":"Sans coût pour l'instant."}</div></button>`:""}
+    <button class="voie je-passe" onclick="journal('Bifurcation : je reste.','bifurcation');finirResolutionCase()"><div class="vname">Rester dans ce Monde</div><div class="vq">Tu poursuis le parcours ici.</div></button>
+  </div></div>`;
+}
+function bifurquer(dest, sentier){
+  if(sentier && state.tension>=2){
+    if(state.ressources.length===0){ showModal(`<h2 class="serif">Sentier fermé</h2><p>À Tension 2, le sentier coûte 1 Ressource, et tu n'en as pas.</p><button class="or" onclick="closeModal()">OK</button>`); return; }
+    showModal(`<h2 class="serif">Quelle Ressource dépenses-tu ?</h2><div class="voies">${state.ressources.map((r,i)=>`<button class="voie" onclick="spendResource(${i});closeModal();allerMonde('${dest}','Sentier')"><div class="vq">« ${escapeHtml(r.libelle)} »</div></button>`).join("")}</div>`);
+    return;
+  }
+  allerMonde(dest, sentier?"Sentier":"Bifurcation");
+}
+function allerMonde(dest, via){ journal(`${via} → Monde ${MONDES[dest].nom}.`,"passage"); enterMonde(dest); state.phase="monde"; state.tour++; render(); }
+
+function renderPassage(){
+  const m=state.position.monde, dest=CHEMINS.passages[m], ok=state.traces[m];
+  return `<div class="card or"><div class="eyebrow">Passage</div><h2 class="serif">Le Passage</h2>
+    <p>Il conduit au Seuil du Monde <strong>${MONDES[dest].nom}</strong>. ${ok?"Tu as la Trace : tu peux passer.":"Il te faut la Trace de ce Monde pour le franchir."}</p>
+    ${state.sophiaOn?`<div class="sophia"><span class="who">Sophia</span>${sophiaSay('passage')}</div>`:""}
+    <div class="row">
+      ${ok?`<button class="or" onclick="allerMonde('${dest}','Passage')">Passer → ${MONDES[dest].nom}</button>`:""}
+      ${ok && tracesCount()>=2 && state.tension<3?`<button class="terre" onclick="goTo('passage_final')">Branche finale → Mon Aboutissement</button>`:""}
+      <button class="ghost" onclick="finirResolutionCase()">Continuer ici</button>
+    </div></div>`;
+}
+
+function renderSaturation(){
+  return `<div class="card terre"><div class="eyebrow">Tension 3 — Saturation</div><h2 class="serif">Le parcours demande une régulation</h2>
+    ${state.sophiaOn?`<div class="sophia"><span class="who">Sophia</span>${sophiaSay('tension_critical')}</div>`:""}</div>
+  <div class="card"><div class="voies">
+    ${state.ressources.map((r,i)=>`<button class="voie" onclick="spendResource(${i});tensionDown(1);journal('Saturation : stabilisée par une Ressource.','saturation');goTo('monde')"><div class="vname">Stabiliser avec une Ressource</div><div class="vq">« ${escapeHtml(r.libelle)} » — Tension 3 → 2, puis tu joues normalement.</div></button>`).join("")}
+    <button class="voie" onclick="saturationFormuler('Temporiser','Que décales-tu ou laisses-tu de côté ?')"><div class="vname">Temporiser</div><div class="vq">Tension 3 → 2. Tour terminé.</div></button>
+    <button class="voie" onclick="saturationFormuler('S\\'allier','À qui demandes-tu quoi ?')"><div class="vname">S'allier</div><div class="vq">Tension 3 → 2. Tour terminé.</div></button>
+    <button class="voie" onclick="saturationFormuler('Adapter','Qu\\'ajustes-tu dans ta manière de faire ?')"><div class="vname">Adapter</div><div class="vq">Tension 3 → 2. Tour terminé.</div></button>
+  </div></div>`;
+}
+function saturationFormuler(type, q){
+  showModal(`<h2 class="serif">${type}</h2><p class="muted">${q}</p><textarea id="sat_txt"></textarea><div class="spacer-sm"></div><button class="or" onclick="appliquerSaturation('${type.replace("'","\\'")}')">Valider</button>`);
+}
+function appliquerSaturation(type){
+  const t=document.getElementById("sat_txt").value.trim(); if(!t){alert("Formule ta régulation.");return;}
+  tensionDown(1); journal(`Saturation (${type}) : « ${t} ».`,"saturation"); closeModal(); state.tour++; goTo('monde');
+}
+
+// ============================================================================
+// PASSAGE FINAL · ABOUTISSEMENT · FIN
+// ============================================================================
+function renderPassageFinal(){
+  return `<div class="hero"><div class="hero-mark">${ensoMark()}</div><div class="eyebrow">Passage final</div><h2 class="serif" style="margin-top:12px">Mon Aboutissement</h2>
+    <div class="tagline">${tracesCount()} Trace${tracesCount()>1?'s':''} · le parcours peut se refermer</div>
+    ${state.sophiaOn?`<div class="sophia" style="text-align:left;margin-top:20px"><span class="who">Sophia</span>${sophiaSay('near_end')}</div>`:""}
+    <div class="row center" style="margin-top:20px"><button class="or lg" onclick="goTo('aboutissement')">Entrer dans la résolution</button><button class="ghost" onclick="goTo(state.position.monde==='CENTRE'?'centre':'monde')">Pas encore</button></div></div>`;
+}
+function renderAboutissement(){
+  const p=state.player;
+  return `<div class="card sauge"><div class="eyebrow">Résolution finale</div><h2 class="serif">Reprends ton point de départ</h2>
+    <p><strong>Situation :</strong> ${escapeHtml(p.situation)||"<em class='muted'>non précisée</em>"}</p>
+    <p><strong>Intention :</strong> ${escapeHtml(p.intention)||"<em class='muted'>non précisée</em>"}</p>
+    <p><strong>Victoire visée :</strong> ${escapeHtml(p.victoire)||"<em class='muted'>non précisée</em>"}</p></div>
+  <div class="card"><div class="field"><label>Ce que tu dis de ton parcours<span class="hint">Facultatif — reste sur cet appareil.</span></label><textarea id="abt_txt" placeholder="Ce que j'ai clarifié, mon prochain mouvement, ou ma nouvelle question."></textarea></div>
+    <h3 class="serif">Où en es-tu ?</h3><div class="voies">
+    <button class="voie" onclick="finir('atteint')"><div class="vname">Aboutissement atteint</div><div class="vq">Résultat obtenu ou clarifié + prochain mouvement concret.</div></button>
+    <button class="voie" onclick="finir('mouvement')"><div class="vname">Aboutissement en mouvement</div><div class="vq">Pas finalisé, mais un prochain mouvement concret est clair.</div></button>
+    <button class="voie" onclick="finir('ouvert')"><div class="vname">Aboutissement ouvert</div><div class="vq">Compréhension nouvelle + question claire + repère de reprise.</div></button>
+    <button class="voie je-passe" onclick="finir('non_resolu')"><div class="vname">Non résolu</div><div class="vq">Retour au Centre ANIMAE. Rien n'est forcé.</div></button>
+  </div></div>`;
+}
+function finir(type){
+  const t=document.getElementById("abt_txt")?.value.trim()||"";
+  journal(`Aboutissement (${type})${t?` : « ${t} »`:""}.`,"fin");
+  if(type==='non_resolu'){ state.phase="centre"; state.position={monde:"CENTRE",caseIdx:0}; render(); return; }
+  state.aboutissement=type; state.phase="fin"; render();
+}
+function renderFin(){
+  const p=state.points, total=p.CONSCIENCE+p.ACTION+p.ALLIANCE+p.ADAPTATION;
+  const tri=Object.entries(p).sort((a,b)=>b[1]-a[1]);
+  const label={atteint:"Aboutissement atteint",mouvement:"Aboutissement en mouvement",ouvert:"Aboutissement ouvert"}[state.aboutissement]||"Fin de parcours";
+  const perso=getPersonnage();
+  return `<div class="hero"><div class="hero-mark">${ensoMark()}</div><div class="eyebrow">Fin de parcours · ${escapeHtml(state.player.nom)}</div>
+    <h2 class="serif" style="margin-top:12px">${label}</h2>
+    <div class="tagline">${state.archetypes.map(a=>a.slot+" "+a.arch.nom).join(" · ")}</div></div>
+  <div class="card"><h3 class="serif">Ton miroir de parcours</h3><p class="muted">Ce n'est pas une note. C'est la trace de la manière dont tu as répondu cette fois-ci.</p>
+    <div class="axes">
+      <div class="axe"><div class="num">${p.CONSCIENCE}</div><div class="lbl">Conscience</div></div>
+      <div class="axe"><div class="num">${p.ACTION}</div><div class="lbl">Action</div></div>
+      <div class="axe"><div class="num">${p.ALLIANCE}</div><div class="lbl">Alliance</div></div>
+      <div class="axe"><div class="num">${p.ADAPTATION}</div><div class="lbl">Adaptation</div></div>
+    </div>
+    ${total>0?`<p>Voie la plus empruntée : <strong>${tri[0][0]}</strong>. La moins empruntée : <strong>${tri[3][0]}</strong>.</p><blockquote>Qu'est-ce que cela te dit de la manière dont cette situation a été traversée ?</blockquote>`:""}
+    ${state.sophiaOn?`<div class="sophia"><span class="who">Sophia</span>${sophiaSay('aboutissement_'+state.aboutissement)}</div>`:""}</div>
+  ${perso?`<div class="card or"><div class="eyebrow">Passerelle facultative vers soi</div><h3 class="serif">Au retour de ${perso.nom}</h3><blockquote>${perso.retour}</blockquote><p class="tiny">Tu peux laisser cette question au niveau du personnage. Le retour à soi n'est jamais obligatoire.</p></div>`:""}
+  <div class="card sauge"><h3 class="serif">Le parcours en bref</h3>
+    <p>${state.tour} tours · ${tracesCount()}/4 Traces ${Object.entries(state.traces).filter(([_,v])=>v).map(([k])=>`<span class="pill">${MONDES[k].nom}</span>`).join(" ")}</p>
+    <p>${state.pools.contextesRencontres.length} Contexte(s) · ${state.pools.defisRencontres.length} Défi(s) · Tension finale ${state.tension}</p>
+    <div class="row"><button class="or" onclick="showJournal()">Relire le journal</button><button class="ghost" onclick="confirmReset()">Nouvelle partie</button></div></div>`;
+}
+
+// ============================================================================
+// BOOT
+// ============================================================================
+document.addEventListener("DOMContentLoaded", render);
+</script>
+</body>
+</html>
